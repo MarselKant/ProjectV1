@@ -1,0 +1,45 @@
+services:
+  auth-service:
+    build: 
+      context: ./backend/AuthService
+      dockerfile: Dockerfile
+    ports:
+      - "7223:7223"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./backend/data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  product-service:
+    build: ./backend/ProductService
+    ports: 
+      - "7224:7224"
+    volumes:
+      - ./backend/data:/data
+    depends_on:
+      - auth-service
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+    - REACT_APP_AUTH_API=http://auth-service:7223
+    - REACT_APP_PRODUCT_API=http://product-service:7224
+    depends_on:
+      - auth-service
+      - product-service
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge

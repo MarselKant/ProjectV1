@@ -1,0 +1,9 @@
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.csproj.AssemblyReference.cache
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.AssemblyInfoInputs.cache
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.AssemblyInfo.cs
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.csproj.CoreCompileInputs.cache
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.RazorAssemblyInfo.cache
+C:\Users\gigpr\source\repos\ProjectForPP\ProjectForPP\obj\Debug\netcoreapp3.1\ProjectForPP.RazorAssemblyInfo.cs
