@@ -1,6 +1,3 @@
-// frontend/src/shared/api/apiClient.js
-
-// Для разработки используем прямые URL, для продакшена - относительные пути через nginx
 const getAuthApiBase = () => {
   if (process.env.NODE_ENV === 'production') {
     return '/api/auth';
@@ -64,8 +61,7 @@ export const productsAPI = {
   getProducts: (params = {}) => {
     const queryParams = new URLSearchParams();
     
-    // Правильные имена параметров согласно бэкенду
-    if (params.search) queryParams.append('search', params.search);
+    if (params.search && params.search.trim() !== '') queryParams.append('search', params.search);
     if (params.minPrice) queryParams.append('minPrice', params.minPrice);
     if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
     if (params.minStock) queryParams.append('minStock', params.minStock);
@@ -130,5 +126,21 @@ export const productsAPI = {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
       }
     });
+  },
+
+  searchUsers: (query) => {
+    const mockUsers = [
+      { id: 'user1', login: 'user1', email: 'user1@example.com' },
+      { id: 'user2', login: 'user2', email: 'user2@example.com' },
+      { id: 'user3', login: 'user3', email: 'user3@example.com' },
+      { id: 'admin', login: 'admin', email: 'admin@example.com' }
+    ];
+    
+    const filteredUsers = mockUsers.filter(user => 
+      user.login.toLowerCase().includes(query.toLowerCase()) ||
+      user.email.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    return Promise.resolve(filteredUsers);
   }
 };

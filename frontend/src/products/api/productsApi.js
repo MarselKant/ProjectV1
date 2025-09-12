@@ -1,4 +1,3 @@
-// frontend/src/products/api/productsApi.js
 const PRODUCT_API_BASE = process.env.REACT_APP_PRODUCT_API || 'http://localhost:7224';
 
 export const productsAPI = {
@@ -11,7 +10,6 @@ export const productsAPI = {
     });
   },
 
-  // Исправленные endpoints
   getPendingTransfers: (userId) => {
     return fetch(`${PRODUCT_API_BASE}/api/transfer/pending/${userId}`, {
       headers: {
@@ -47,5 +45,21 @@ export const productsAPI = {
       },
       body: JSON.stringify(transferData)
     });
+  },
+
+  searchUsers: (query) => {
+    const mockUsers = [
+      { id: 'user1', login: 'user1', email: 'user1@example.com' },
+      { id: 'user2', login: 'user2', email: 'user2@example.com' },
+      { id: 'user3', login: 'user3', email: 'user3@example.com' },
+      { id: 'admin', login: 'admin', email: 'admin@example.com' }
+    ];
+    
+    const filteredUsers = mockUsers.filter(user => 
+      user.login.toLowerCase().includes(query.toLowerCase()) ||
+      user.email.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    return Promise.resolve(filteredUsers);
   }
 };

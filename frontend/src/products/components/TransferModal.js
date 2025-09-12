@@ -1,4 +1,3 @@
-// frontend/src/products/components/TransferModal.js
 import React, { useState, useEffect } from 'react';
 import { productsAPI } from '../api/productsApi';
 
@@ -22,6 +21,7 @@ const TransferModal = ({ product, onClose, onSuccess }) => {
       setUsers(usersData || []);
     } catch (err) {
       console.error('Error searching users:', err);
+      setUsers([]);
     }
   };
 
@@ -40,8 +40,7 @@ const TransferModal = ({ product, onClose, onSuccess }) => {
     setError('');
 
     try {
-      // Получаем текущего пользователя из localStorage или используем дефолтного
-      const currentUserId = 'user2'; // В реальном приложении нужно получать из токена
+      const currentUserId = 'user2';
       
       await productsAPI.transferProduct({
         productId: product.id,
