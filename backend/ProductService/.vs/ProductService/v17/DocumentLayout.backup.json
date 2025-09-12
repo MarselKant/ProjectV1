@@ -1,45 +1,45 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\",
+  "WorkspaceRootPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\models\\transferhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\transferhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\models\\paginationparams.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\paginationparams.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\controllers\\transfercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\controllers\\transfercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\controllers\\productscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\controllers\\productscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\controllers\\productscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\services\\authserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\models\\transferhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\transferhistory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\product.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\models\\paginationparams.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\models\\paginationparams.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\controllers\\transfercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\controllers\\transfercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\services\\authserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\services\\authserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\context\\productcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\context\\productcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\context\\productcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\project\\backend\\productservice\\productservice\\programm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\productservice\\productservice\\programm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{88E61CAF-7AE1-4214-9244-B80C1F83D37F}|ProductService\\ProductService.csproj|solutionrelative:productservice\\programm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -50,15 +50,15 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 9,
               "Title": "Programm.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Programm.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Programm.cs",
               "RelativeDocumentMoniker": "ProductService\\Programm.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Programm.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Programm.cs",
               "RelativeToolTip": "ProductService\\Programm.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -66,39 +66,38 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 1,
               "Title": "Startup.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Startup.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Startup.cs",
               "RelativeDocumentMoniker": "ProductService\\Startup.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Startup.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Startup.cs",
               "RelativeToolTip": "ProductService\\Startup.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAwwFgAAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAEsAAAAAAAAAAADwv3IAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-08T15:41:12.061Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
               "Title": "TransferController.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Controllers\\TransferController.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Controllers\\TransferController.cs",
               "RelativeDocumentMoniker": "ProductService\\Controllers\\TransferController.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Controllers\\TransferController.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Controllers\\TransferController.cs",
               "RelativeToolTip": "ProductService\\Controllers\\TransferController.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAQwGoAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T15:38:32.384Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-08T15:38:32.384Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 0,
               "Title": "ProductsController.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Controllers\\ProductsController.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Controllers\\ProductsController.cs",
               "RelativeDocumentMoniker": "ProductService\\Controllers\\ProductsController.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Controllers\\ProductsController.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Controllers\\ProductsController.cs",
               "RelativeToolTip": "ProductService\\Controllers\\ProductsController.cs",
-              "ViewState": "AgIAAEcAAAAAAAAAAAAwwBQAAAAlAAAAAAAAAA==",
+              "ViewState": "AgIAADgAAAAAAAAAAAAUwEoAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-08T15:37:47.924Z",
               "EditorCaption": ""
@@ -107,9 +106,9 @@
               "$type": "Document",
               "DocumentIndex": 8,
               "Title": "EmailService.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Services\\EmailService.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Services\\EmailService.cs",
               "RelativeDocumentMoniker": "ProductService\\Services\\EmailService.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Services\\EmailService.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Services\\EmailService.cs",
               "RelativeToolTip": "ProductService\\Services\\EmailService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -119,9 +118,9 @@
               "$type": "Document",
               "DocumentIndex": 6,
               "Title": "AuthServiceClient.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Services\\AuthServiceClient.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Services\\AuthServiceClient.cs",
               "RelativeDocumentMoniker": "ProductService\\Services\\AuthServiceClient.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Services\\AuthServiceClient.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Services\\AuthServiceClient.cs",
               "RelativeToolTip": "ProductService\\Services\\AuthServiceClient.cs",
               "ViewState": "AgIAAAUAAAAAAAAAAAAQwBwAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -131,9 +130,9 @@
               "$type": "Document",
               "DocumentIndex": 7,
               "Title": "ProductContext.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Context\\ProductContext.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Context\\ProductContext.cs",
               "RelativeDocumentMoniker": "ProductService\\Context\\ProductContext.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Context\\ProductContext.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Context\\ProductContext.cs",
               "RelativeToolTip": "ProductService\\Context\\ProductContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAoAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -141,42 +140,39 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
               "Title": "PaginationParams.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\PaginationParams.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\PaginationParams.cs",
               "RelativeDocumentMoniker": "ProductService\\Models\\PaginationParams.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\PaginationParams.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\PaginationParams.cs",
               "RelativeToolTip": "ProductService\\Models\\PaginationParams.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T15:35:33.122Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-08T15:35:33.122Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "TransferHistory.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\TransferHistory.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\TransferHistory.cs",
               "RelativeDocumentMoniker": "ProductService\\Models\\TransferHistory.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\TransferHistory.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\TransferHistory.cs",
               "RelativeToolTip": "ProductService\\Models\\TransferHistory.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAeAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T15:35:06.456Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-08T15:35:06.456Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "Product.cs",
-              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\Product.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\Product.cs",
               "RelativeDocumentMoniker": "ProductService\\Models\\Product.cs",
-              "ToolTip": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\Models\\Product.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\Models\\Product.cs",
               "RelativeToolTip": "ProductService\\Models\\Product.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAA6AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-08T15:34:51.121Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-08T15:34:51.121Z"
             }
           ]
         }

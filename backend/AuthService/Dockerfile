@@ -1,13 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["AuthService/AuthService.csproj", "AuthService/"]
-RUN dotnet restore "AuthService/AuthService.csproj"
+
+# Копируем все файлы проекта
 COPY . .
-WORKDIR "/src/AuthService"
-RUN dotnet build "AuthService.csproj" -c Release -o /app/build
+
+# Восстанавливаем зависимости и собираем
+RUN dotnet restore
+RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "AuthService.csproj" -c Release -o /app/publish
+RUN dotnet publish -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS final
 WORKDIR /app

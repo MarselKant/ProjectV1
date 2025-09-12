@@ -1,38 +1,50 @@
+version: '3.8'
+
 services:
+  # Auth Service
   auth-service:
     build: 
       context: ./backend/AuthService
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  # Используем обычный Dockerfile
     ports:
       - "7223:7223"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:7223
     volumes:
       - ./backend/data:/data
     networks:
       - app-network
     restart: unless-stopped
 
+  # Product Service
   product-service:
-    build: ./backend/ProductService
+    build: 
+      context: ./backend/ProductService
+      dockerfile: Dockerfile  # Используем обычный Dockerfile
     ports: 
       - "7224:7224"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:7224
     volumes:
       - ./backend/data:/data
     depends_on:
       - auth-service
     networks:
       - app-network
+    restart: unless-stopped
 
+  # Frontend
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
     ports:
       - "3000:80"
     environment:
-    - REACT_APP_AUTH_API=http://auth-service:7223
-    - REACT_APP_PRODUCT_API=http://product-service:7224
+      - REACT_APP_AUTH_API=http://localhost:7223/api/auth
+      - REACT_APP_PRODUCT_API=http://localhost:7224/api/products
+      - NODE_ENV=production
     depends_on:
       - auth-service
       - product-service

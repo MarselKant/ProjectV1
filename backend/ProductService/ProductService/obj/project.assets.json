@@ -9099,11 +9099,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\ProductService.csproj",
+      "projectUniqueName": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\ProductService.csproj",
       "projectName": "ProductService",
-      "projectPath": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\ProductService.csproj",
+      "projectPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\ProductService.csproj",
       "packagesPath": "C:\\Users\\gigpr\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\ProductService\\ProductService\\obj\\",
+      "outputPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\ProductService\\ProductService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\gigpr\\AppData\\Roaming\\NuGet\\NuGet.Config",
