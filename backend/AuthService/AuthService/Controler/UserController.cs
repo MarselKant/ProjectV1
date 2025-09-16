@@ -119,5 +119,22 @@ namespace AuthService.Controler
                 return Unauthorized();
             }
         }
+        [Route("user-id")]
+        [HttpGet]
+        public ActionResult GetUserId([FromQuery] string username)
+        {
+            try
+            {
+                var user = _allUsers.Users.FirstOrDefault(x => x.Login == username);
+                if (user == null)
+                    return NotFound();
+
+                return Ok(user.Id.ToString());
+            }
+            catch (Exception)
+            {
+                return StatusCode(500);
+            }
+        }
     }
 }

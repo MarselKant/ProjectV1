@@ -1,4 +1,7 @@
-﻿namespace ProductService.Services
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+
+namespace ProductService.Services
 {
     public class AuthServiceClient
     {
@@ -31,6 +34,42 @@
             {
                 Console.WriteLine($"Validation error: {ex.Message}");
                 return false;
+            }
+        }
+        public async Task<int> GetUserIdFromTokenAsync(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var username = jwtToken.Claims.First(claim => claim.Type == "unique_name").Value;
+
+
+                var response = await _httpClient.GetAsync($"/api/auth/user-id?username={username}");
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var userIdString = await response.Content.ReadAsStringAsync();
+
+                    if (int.TryParse(userIdString, out int userId))
+                    {
+                        return userId;
+                    }
+                }
+                else if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Console.WriteLine($"User {username} not found in AuthService");
+                    return -1;
+                }
+
+                Console.WriteLine($"Failed to get user ID for {username}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetUserIdFromTokenAsync: {ex.Message}");
+                return 0;
             }
         }
     }

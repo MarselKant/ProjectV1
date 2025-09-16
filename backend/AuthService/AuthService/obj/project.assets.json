@@ -9217,11 +9217,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\AuthService\\AuthService\\AuthService.csproj",
+      "projectUniqueName": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\AuthService.csproj",
       "projectName": "AuthService",
-      "projectPath": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\AuthService\\AuthService\\AuthService.csproj",
+      "projectPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\AuthService.csproj",
       "packagesPath": "C:\\Users\\gigpr\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gigpr\\Downloads\\PROJECT\\backend\\AuthService\\AuthService\\obj\\",
+      "outputPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\gigpr\\AppData\\Roaming\\NuGet\\NuGet.Config",

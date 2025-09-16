@@ -24,8 +24,7 @@ const PendingTransfers = ({ transfers = [], onUpdate }) => {
       setResponding(null);
     }
   };
-
-  // Защита от неправильных данных
+  
   if (!transfers || !Array.isArray(transfers) || transfers.length === 0) {
     return null;
   }

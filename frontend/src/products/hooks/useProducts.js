@@ -1,4 +1,3 @@
-// frontend/src/products/hooks/useProducts.js
 import { useState, useCallback } from 'react';
 import { productsAPI } from '../api/productsApi';
 
@@ -25,17 +24,16 @@ export const useProducts = () => {
         maxPrice: filters.maxPrice || '',
         minStock: filters.minStock || ''
       };
+      Object.keys(params).forEach(key => {
+        if (params[key] === '' || params[key] === null || params[key] === undefined) {
+          delete params[key];
+        }
+      });
 
       console.log('Fetching products with params:', params);
-      console.log('Token:', localStorage.getItem('accessToken'));
-
       const response = await productsAPI.getProducts(params);
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       if (!response.ok) {
-        // Попробуем получить текст ошибки
         const errorText = await response.text();
         console.error('Error response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);

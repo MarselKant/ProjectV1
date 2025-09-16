@@ -2,8 +2,19 @@ const PRODUCT_API_BASE = process.env.REACT_APP_PRODUCT_API || 'http://localhost:
 
 export const productsAPI = {
   getProducts: (params = {}) => {
-    const queryParams = new URLSearchParams(params).toString();
-    return fetch(`${PRODUCT_API_BASE}/api/products?${queryParams}`, {
+    const queryParams = new URLSearchParams();
+    
+    if (params.pageNumber) queryParams.append('pageNumber', params.pageNumber);
+    if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+    if (params.search) queryParams.append('search', params.search);
+    if (params.minPrice) queryParams.append('minPrice', params.minPrice);
+    if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
+    if (params.minStock) queryParams.append('minStock', params.minStock);
+
+    const url = `${PRODUCT_API_BASE}/api/products?${queryParams.toString()}`;
+    console.log('API Request:', url);
+    
+    return fetch(url, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
       }
@@ -23,6 +34,7 @@ export const productsAPI = {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json'
       }
     });
   },
@@ -32,6 +44,7 @@ export const productsAPI = {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json'
       }
     });
   },
@@ -48,18 +61,13 @@ export const productsAPI = {
   },
 
   searchUsers: (query) => {
-    const mockUsers = [
-      { id: 'user1', login: 'user1', email: 'user1@example.com' },
-      { id: 'user2', login: 'user2', email: 'user2@example.com' },
-      { id: 'user3', login: 'user3', email: 'user3@example.com' },
-      { id: 'admin', login: 'admin', email: 'admin@example.com' }
-    ];
-    
-    const filteredUsers = mockUsers.filter(user => 
-      user.login.toLowerCase().includes(query.toLowerCase()) ||
-      user.email.toLowerCase().includes(query.toLowerCase())
-    );
-    
-    return Promise.resolve(filteredUsers);
+    return fetch(`${PRODUCT_API_BASE}/api/transfer/users?search=${encodeURIComponent(query)}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+      }
+    }).then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.json();
+    });
   }
 };

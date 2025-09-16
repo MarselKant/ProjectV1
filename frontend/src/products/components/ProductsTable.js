@@ -1,4 +1,3 @@
-// frontend/src/products/components/ProductsTable.js
 import React, { useState } from 'react';
 import ProductModal from './ProductModal';
 import TransferModal from './TransferModal';
@@ -9,7 +8,8 @@ const ProductsTable = ({
   pagination, 
   onPageChange, 
   onPageSizeChange, 
-  onTransferSuccess 
+  onTransferSuccess,
+  currentUser
 }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -23,6 +23,22 @@ const ProductsTable = ({
 
   const handleTransferClick = (product, e) => {
     e.stopPropagation();
+    
+    if (!currentUser) {
+      alert('Необходимо авторизоваться');
+      return;
+    }
+
+    if (product.userId !== currentUser.id) {
+      alert('Вы можете передавать только свои товары');
+      return;
+    }
+    
+    if (product.countInStock <= 0) {
+      alert('Товар отсутствует на складе');
+      return;
+    }
+    
     setTransferProduct(product);
     setShowTransferModal(true);
   };
@@ -34,11 +50,12 @@ const ProductsTable = ({
   };
 
   const truncateDescription = (description, maxLength = 50) => {
+    if (!description) return '';
     if (description.length <= maxLength) return description;
     return description.substring(0, maxLength) + '...';
   };
 
-  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+  const totalPages = Math.ceil(pagination.total / pagination.pageSize) || 1;
 
   return (
     <div className="products-table-container">
@@ -56,7 +73,7 @@ const ProductsTable = ({
         </div>
         
         <div className="page-info">
-          Страница {pagination.page} из {totalPages || 1}
+          Страница {pagination.page} из {totalPages}
         </div>
       </div>
 
@@ -69,6 +86,7 @@ const ProductsTable = ({
               <th>Описание</th>
               <th>Цена</th>
               <th>В наличии</th>
+              <th>Владелец</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -83,14 +101,27 @@ const ProductsTable = ({
                 <td>{product.name}</td>
                 <td>{truncateDescription(product.description)}</td>
                 <td>{product.price} ₽</td>
-                <td>{product.count_in_stock}</td>
+                <td>{product.countInStock} шт.</td>
+                <td>
+                  {product.userId === currentUser?.id ? 
+                    'Вы' : 
+                    `Пользователь ${product.userId}`
+                  }
+                </td>
                 <td>
                   <button 
                     className="transfer-btn"
                     onClick={(e) => handleTransferClick(product, e)}
-                    disabled={product.count_in_stock === 0}
+                    disabled={!currentUser || product.countInStock === 0 || product.userId !== currentUser?.id}
+                    title={
+                      !currentUser ? "Необходимо авторизоваться" :
+                      product.userId !== currentUser?.id ? "Можно передавать только свои товары" : 
+                      product.countInStock === 0 ? "Товар отсутствует" : "Передать товар"
+                    }
                   >
-                    Передать
+                    {!currentUser ? "Войдите" :
+                     product.countInStock === 0 ? "Нет в наличии" : 
+                     product.userId !== currentUser?.id ? "Не ваш" : "Передать"}
                   </button>
                 </td>
               </tr>
@@ -113,7 +144,7 @@ const ProductsTable = ({
           Назад
         </button>
         
-        <span>Страница {pagination.page} из {totalPages || 1}</span>
+        <span>Страница {pagination.page} из {totalPages}</span>
         
         <button 
           disabled={pagination.page >= totalPages} 
@@ -135,6 +166,7 @@ const ProductsTable = ({
           product={transferProduct}
           onClose={() => setShowTransferModal(false)}
           onSuccess={handleTransferComplete}
+          currentUser={currentUser}
         />
       )}
     </div>

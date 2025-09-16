@@ -31,12 +31,9 @@ const LoginForm = ({ onForgotPassword }) => {
       if (!result.success) {
         setError(result.error || 'Ошибка авторизации');
       } else {
-        // Успешный логин - проверяем токены
         const token = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         console.log('Tokens saved:', { token, refreshToken });
-        
-        // Перезагружаем страницу для применения изменений
         window.location.reload();
       }
     } catch (err) {

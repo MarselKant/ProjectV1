@@ -12,7 +12,6 @@ export const useAuth = () => {
     const validateAuth = async () => {
       if (token) {
         try {
-          // Простая проверка - если есть токен, считаем авторизованным
           setIsAuthenticated(true);
         } catch (error) {
           localStorage.removeItem('accessToken');
@@ -36,7 +35,6 @@ export const useAuth = () => {
         const data = await response.json();
         console.log('Login response data:', data);
         
-        // Исправлено: используем нижний регистр для ключей
         if (data.accessToken && data.refreshToken) {
           localStorage.setItem('accessToken', data.accessToken);
           localStorage.setItem('refreshToken', data.refreshToken);

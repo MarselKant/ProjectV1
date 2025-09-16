@@ -2,7 +2,7 @@
 const AUTH_API_BASE = process.env.REACT_APP_AUTH_API || 'http://localhost:7223';
 
 export const authApi = {
-  // Логин
+
   login: (loginData) => {
     return fetch(`${AUTH_API_BASE}/api/auth/login`, {
       method: 'POST',
@@ -13,7 +13,7 @@ export const authApi = {
     });
   },
 
-  // Восстановление пароля
+
   forgotPassword: (emailOrLogin) => {
     return fetch(`${AUTH_API_BASE}/api/auth/forgot-password`, {
       method: 'POST',
@@ -24,7 +24,6 @@ export const authApi = {
     });
   },
 
-  // Обновление токена
   refreshToken: (refreshToken) => {
     return fetch(`${AUTH_API_BASE}/api/auth/refresh`, {
       method: 'POST',

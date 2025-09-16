@@ -51,5 +51,37 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthService.Controler.UserController",
+    "Method": "GetUserId",
+    "RelativePath": "api/auth/user-id",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "AuthService.Controler.UserController",
+    "Method": "ValidateToken",
+    "RelativePath": "api/auth/validate-token",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "AccessToken",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
   }
 ]

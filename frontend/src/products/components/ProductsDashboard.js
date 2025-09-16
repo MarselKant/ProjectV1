@@ -1,4 +1,3 @@
-// frontend/src/products/components/ProductsDashboard.js
 import React, { useState, useEffect } from 'react';
 import ProductsTable from './ProductsTable';
 import PendingTransfers from './PendingTransfers';
@@ -16,28 +15,55 @@ const ProductsDashboard = () => {
     minStock: ''
   });
   const [pendingTransfers, setPendingTransfers] = useState([]);
-  const [userId, setUserId] = useState('user2'); // Временное значение
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    console.log('Initializing ProductsDashboard');
-    console.log('Access token:', localStorage.getItem('accessToken'));
-    
-    fetchProducts();
-    fetchPendingTransfers();
-  }, []);
+  console.log('Initializing ProductsDashboard');
+  
+  const getUserFromToken = () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const username = payload.unique_name;
+        
+        const userMap = {
+          'root': { id: 1, login: 'root' },
+          'asd': { id: 2, login: 'asd' }
+        };
+        
+        return userMap[username] || { id: 1, login: 'root' };
+      }
+    } catch (error) {
+      console.error('Error getting user from token:', error);
+    }
+    return null;
+  };
 
-  const fetchPendingTransfers = async () => {
+  const user = getUserFromToken();
+  if (user) {
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    console.log('Current user:', user);
+    fetchProducts();
+    fetchPendingTransfers(user.id);
+  }
+}, []);
+
+  const fetchPendingTransfers = async (userId) => {
     try {
       console.log('Fetching pending transfers for user:', userId);
       const response = await productsAPI.getPendingTransfers(userId);
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const transfers = await response.json();
-      console.log('Pending transfers:', transfers);
-      setPendingTransfers(transfers || []);
+      console.log('Pending transfers received:', transfers);
+      setPendingTransfers(Array.isArray(transfers) ? transfers : []);
     } catch (err) {
       console.error('Error fetching pending transfers:', err);
       setPendingTransfers([]);
@@ -46,7 +72,7 @@ const ProductsDashboard = () => {
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
-    fetchProducts(newFilters);
+    fetchProducts({ ...newFilters, page: 1 });
   };
 
   const handlePageChange = (newPage) => {
@@ -59,7 +85,9 @@ const ProductsDashboard = () => {
 
   const handleTransferSuccess = () => {
     fetchProducts();
-    fetchPendingTransfers();
+    if (currentUser) {
+      fetchPendingTransfers(currentUser.id);
+    }
   };
 
   if (loading && products.length === 0) {
@@ -70,9 +98,15 @@ const ProductsDashboard = () => {
     <div className="products-dashboard">
       <h1>Управление товарами</h1>
       
+      {currentUser && (
+        <div className="user-info">
+          Текущий пользователь: {currentUser.login} (ID: {currentUser.id})
+        </div>
+      )}
+      
       <PendingTransfers 
         transfers={pendingTransfers} 
-        onUpdate={fetchPendingTransfers}
+        onUpdate={() => currentUser && fetchPendingTransfers(currentUser.id)}
       />
       
       <Filters 
@@ -89,6 +123,7 @@ const ProductsDashboard = () => {
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
         onTransferSuccess={handleTransferSuccess}
+        currentUser={currentUser}
       />
     </div>
   );

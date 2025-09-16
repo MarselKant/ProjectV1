@@ -10,7 +10,6 @@ namespace AuthService.Context
         public UserContext(DbContextOptions<UserContext> options) : base(options)
         {
         }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Data Source=/data/auth.db");

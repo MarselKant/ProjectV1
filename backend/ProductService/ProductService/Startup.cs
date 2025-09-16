@@ -29,7 +29,6 @@ namespace ProductService
             });
 
             services.AddScoped<EmailService>();
-            services.AddControllers();
 
             services.AddCors(options =>
             {
@@ -40,6 +39,9 @@ namespace ProductService
                         .AllowAnyHeader()
                         .AllowCredentials());
             });
+
+            services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -58,7 +60,7 @@ namespace ProductService
                     Description = "Введите JWT токен в формате: Bearer {ваш_токен}"
                 });
 
-                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
                  {
                     {
                     new OpenApiSecurityScheme
@@ -76,35 +78,46 @@ namespace ProductService
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("abcdefghijklmnopqrstuvwxyz0123456789")),
-                            ValidateIssuer = true,
-                            ValidIssuer = "Marsel",
-                            ValidateAudience = true,
-                            ValidAudience = "Users",
-                            ValidateLifetime = true
-                        };
-                    });
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("abcdefghijklmnopqrstuvwxyz0123456789")),
+                        ValidateIssuer = true,
+                        ValidIssuer = "Marsel",
+                        ValidateAudience = true,
+                        ValidAudience = "Users",
+                        ValidateLifetime = true
+                    };
+                });
 
             services.AddAuthorization();
             services.AddControllers()
                 .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                        options.JsonSerializerOptions.WriteIndented = true;
-                    });
+                {
+                    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                    options.JsonSerializerOptions.WriteIndented = true;
+                });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseStaticFiles();
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                app.UseHsts();
+            }
+
             app.UseCors("AllowFrontend");
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
