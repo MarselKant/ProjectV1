@@ -4,6 +4,7 @@ using AuthService.Context;
 using AuthService.Model;
 using AuthService.Tokens;
 using System.Security.Claims;
+using AuthService.Services;
 
 namespace AuthService.Controler
 {
@@ -13,11 +14,13 @@ namespace AuthService.Controler
     {
         private readonly UserContext _allUsers;
         private readonly JwtTokenGenerator _jwtTokenGenerator;
+        private readonly EmailService _emailService;
 
-        public UserController(UserContext context)
+        public UserController(UserContext context, EmailService emailService)
         {
             _allUsers = context;
             _jwtTokenGenerator = new JwtTokenGenerator("Marsel", "Users", "abcdefghijklmnopqrstuvwxyz0123456789");
+            _emailService = emailService;
         }
 
         [Route("login")]
@@ -134,6 +137,44 @@ namespace AuthService.Controler
             catch (Exception)
             {
                 return StatusCode(500);
+            }
+        }
+        [Route("user-email")]
+        [HttpGet]
+        public ActionResult GetUserEmail([FromQuery] int userId)
+        {
+            try
+            {
+                var email = _allUsers.Emails.FirstOrDefault(e => e.UserId == userId);
+
+                if (email != null && !string.IsNullOrEmpty(email.EmailAddress))
+                {
+                    return Ok(email.EmailAddress);
+                }
+
+                return NotFound("Email not found for user");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user email: {ex.Message}");
+                return StatusCode(500);
+            }
+        }
+
+        [Route("send-email")]
+        [HttpPost]
+        public async Task<ActionResult> SendEmail([FromForm] string To, [FromForm] string Subject, [FromForm] string Body)
+        {
+            try
+            {
+                await _emailService.SendEmailAsync(To, Subject, Body);
+
+                return Ok(new { Message = "Email sent successfully" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                return StatusCode(500, "Failed to send email");
             }
         }
     }

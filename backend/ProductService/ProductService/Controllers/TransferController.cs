@@ -6,6 +6,7 @@ using ProductService.Models;
 using ProductService.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Text;
 
 namespace ProductService.Controllers
 {
@@ -16,13 +17,11 @@ namespace ProductService.Controllers
     {
         private readonly ProductContext _context;
         private readonly AuthServiceClient _authClient;
-        private readonly EmailService _emailService;
 
-        public TransferController(ProductContext context, AuthServiceClient authClient, EmailService emailService)
+        public TransferController(ProductContext context, AuthServiceClient authClient)
         {
             _context = context;
             _authClient = authClient;
-            _emailService = emailService;
         }
 
         [HttpPost]
@@ -96,10 +95,20 @@ namespace ProductService.Controllers
                 _context.Transfers.Add(transfer);
                 await _context.SaveChangesAsync();
 
-                await _emailService.SendTransferNotificationAsync(
-                    transferRequest.ToUserId.ToString(),
-                    $"{transferRequest.Items.Count} products",
-                    transfer.Id);
+                var recipientEmail = await GetUserEmailAsync(transferRequest.ToUserId.ToString());
+
+                if (!string.IsNullOrEmpty(recipientEmail))
+                {
+                    await SendEmailNotificationAsync(
+                        recipientEmail,
+                        transfer.Id,
+                        transferRequest.Items
+                    );
+                }
+                else
+                {
+                    Console.WriteLine($"Could not find email for user ID: {transferRequest.ToUserId}");
+                }
 
                 return Ok(new
                 {
@@ -112,6 +121,88 @@ namespace ProductService.Controllers
             {
                 Console.WriteLine($"Error transferring products: {ex}");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        private async Task<string> GetUserEmailAsync(string userId)
+        {
+            try
+            {
+                var response = await _authClient.GetAsync($"/api/auth/user-email?userId={userId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+
+                Console.WriteLine($"Failed to get email for user {userId}: {response.StatusCode}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user email: {ex.Message}");
+                return null;
+            }
+        }
+
+        private async Task SendEmailNotificationAsync(string toEmail, int transferId, List<TransferItemRequest> items)
+        {
+            try
+            {
+                var productDetails = new StringBuilder();
+                productDetails.AppendLine("Transfer items details:");
+                productDetails.AppendLine("-----------------------");
+
+                foreach (var item in items)
+                {
+                    var product = await _context.Products.FindAsync(item.ProductId);
+                    if (product != null)
+                    {
+                        productDetails.AppendLine($"- {product.Name}: {item.Quantity} units");
+                        productDetails.AppendLine($"  Description: {product.Description}");
+                        productDetails.AppendLine($"  Price: {product.Price:C}");
+                        productDetails.AppendLine();
+                    }
+                    else
+                    {
+                        productDetails.AppendLine($"- Product ID {item.ProductId}: {item.Quantity} units");
+                        productDetails.AppendLine();
+                    }
+                }
+
+                var subject = "Transfer Request Notification";
+                var body = $@"
+                You have received a transfer request with {items.Count} product(s).
+                
+                Transfer ID: {transferId}
+                Items count: {items.Count}
+                
+                {productDetails}
+                
+                Please accept or reject the transfer request in the system.
+                ";
+
+                var emailContent = new FormUrlEncodedContent(new[]
+                {
+            new KeyValuePair<string, string>("To", toEmail),
+            new KeyValuePair<string, string>("Subject", subject),
+            new KeyValuePair<string, string>("Body", body)
+        });
+
+                var response = await _authClient.PostAsync("/api/auth/send-email", emailContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Email sent successfully to {toEmail}");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to send email to {toEmail}: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
             }
         }
 
@@ -136,7 +227,7 @@ namespace ProductService.Controllers
                 var currentUserId = GetCurrentUserIdFromToken(token);
 
                 if (transfer.ToUserId != currentUserId)
-                    return Forbid("You can only accept transfers sent to you");
+                    return StatusCode(403, new { Message = "You don't have access to do this" });
 
                 if (transfer.Status != TransferStatus.Pending)
                     return BadRequest("Transfer is already processed");
@@ -216,7 +307,7 @@ namespace ProductService.Controllers
                 var currentUserId = GetCurrentUserIdFromToken(token);
 
                 if (transfer.ToUserId != currentUserId)
-                    return Forbid("You can only reject transfers sent to you");
+                    return StatusCode(403, new { Message = "You don't have access to do this" });
 
                 if (transfer.Status != TransferStatus.Pending)
                     return BadRequest("Transfer is already processed");
@@ -262,7 +353,7 @@ namespace ProductService.Controllers
                 var currentUserId = GetCurrentUserIdFromToken(token);
 
                 if (userId != currentUserId)
-                    return Forbid("You can only view your own transfers");
+                    return StatusCode(403, new { Message = "You don't have access to do this" });
 
                 var pendingTransfers = await _context.TransferHistories
                     .Include(th => th.Product)

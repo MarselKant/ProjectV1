@@ -1,15 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using AuthService.Context;
+using AuthService.Model;
+using AuthService.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace AuthService
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<UserContext>(options =>
                 options.UseSqlite("Data Source=/data/auth.db"));
+
+            services.Configure<SmtpSettings>(Configuration.GetSection("SmtpSettings"));
+            services.AddSingleton(provider =>
+            {
+                var config = provider.GetRequiredService<IConfiguration>();
+                return config.GetSection("SmtpSettings").Get<SmtpSettings>();
+            });
+
+            services.AddScoped<EmailService>();
 
             services.AddCors(options =>
             {
@@ -23,6 +41,7 @@ namespace AuthService
 
             services.AddControllers();
             services.AddMvc(option => option.EnableEndpointRouting = false);
+
 
             services.AddSwaggerGen(c =>
             {

@@ -3,16 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\controler\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\controler\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\context\\usercontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\context\\usercontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\controler\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\controler\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\model\\smtpsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\model\\smtpsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\startup.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\services\\emailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\model\\email.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|solutionrelative:authservice\\model\\email.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{6F420091-08E1-4213-8296-CE89E084DF96}|AuthService\\AuthService.csproj|c:\\users\\gigpr\\downloads\\projectv1-main\\backend\\authservice\\authservice\\tokens\\jwttokengenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -26,17 +38,56 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 5,
+              "Title": "Email.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Model\\Email.cs",
+              "RelativeDocumentMoniker": "AuthService\\Model\\Email.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Model\\Email.cs",
+              "RelativeToolTip": "AuthService\\Model\\Email.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-17T09:17:56.197Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "EmailService.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Services\\EmailService.cs",
+              "RelativeDocumentMoniker": "AuthService\\Services\\EmailService.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Services\\EmailService.cs",
+              "RelativeToolTip": "AuthService\\Services\\EmailService.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAgwBgAAAA1AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-17T09:11:22.84Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "SmtpSettings.cs",
+              "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Model\\SmtpSettings.cs",
+              "RelativeDocumentMoniker": "AuthService\\Model\\SmtpSettings.cs",
+              "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Model\\SmtpSettings.cs",
+              "RelativeToolTip": "AuthService\\Model\\SmtpSettings.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-17T09:10:22.944Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "Startup.cs",
               "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Startup.cs",
               "RelativeDocumentMoniker": "AuthService\\Startup.cs",
               "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Startup.cs",
               "RelativeToolTip": "AuthService\\Startup.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-15T13:16:23.627Z",
               "EditorCaption": ""
@@ -49,13 +100,14 @@
               "RelativeDocumentMoniker": "AuthService\\Context\\UserContext.cs",
               "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Context\\UserContext.cs",
               "RelativeToolTip": "AuthService\\Context\\UserContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAsAAAAAAAAAAAAwwCcAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-15T13:15:21.696Z"
+              "WhenOpened": "2025-09-15T13:15:21.696Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": "JwtTokenGenerator.cs",
               "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Tokens\\JwtTokenGenerator.cs",
               "RelativeDocumentMoniker": "AuthService\\Tokens\\JwtTokenGenerator.cs",
@@ -63,19 +115,21 @@
               "RelativeToolTip": "AuthService\\Tokens\\JwtTokenGenerator.cs",
               "ViewState": "AgIAACAAAAAAAAAAAAAswD4AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-11T09:49:57.014Z"
+              "WhenOpened": "2025-09-11T09:49:57.014Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "UserController.cs",
               "DocumentMoniker": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Controler\\UserController.cs",
               "RelativeDocumentMoniker": "AuthService\\Controler\\UserController.cs",
               "ToolTip": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\Controler\\UserController.cs",
               "RelativeToolTip": "AuthService\\Controler\\UserController.cs",
-              "ViewState": "AgIAAG8AAAAAAAAAAAAUwIUAAAAdAAAAAAAAAA==",
+              "ViewState": "AgIAAJ4AAAAAAAAAAAAuwBAAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-11T09:49:29.748Z"
+              "WhenOpened": "2025-09-11T09:49:29.748Z",
+              "EditorCaption": ""
             }
           ]
         }

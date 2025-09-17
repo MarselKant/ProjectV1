@@ -28,7 +28,6 @@ namespace ProductService
                 client.BaseAddress = new Uri("http://auth-service:7223");
             });
 
-            services.AddScoped<EmailService>();
 
             services.AddCors(options =>
             {

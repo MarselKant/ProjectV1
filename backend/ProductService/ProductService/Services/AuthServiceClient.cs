@@ -72,5 +72,14 @@ namespace ProductService.Services
                 return 0;
             }
         }
+        public async Task<HttpResponseMessage> GetAsync(string requestUri)
+        {
+            return await _httpClient.GetAsync(requestUri);
+        }
+
+        public async Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+        {
+            return await _httpClient.PostAsync(requestUri, content);
+        }
     }
 }

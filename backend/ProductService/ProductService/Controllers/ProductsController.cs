@@ -38,37 +38,50 @@ namespace ProductService.Controllers
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var query = _context.Products.AsQueryable();
+                var allProducts = await _context.Products.ToListAsync();
 
-                if (!string.IsNullOrEmpty(search))
+                var filteredProducts = allProducts.AsEnumerable();
+
+
+                if (!string.IsNullOrWhiteSpace(search))
                 {
-                    query = query.Where(p =>
-                        p.Name != null && p.Name.ToLower().Contains(search.ToLower()) ||
-                        p.Description != null && p.Description.ToLower().Contains(search.ToLower()));
+                    var searchLower = search.Trim().ToLower();
+
+                    filteredProducts = filteredProducts.Where(p =>
+                        (p.Name != null && p.Name.ToLower().Contains(searchLower)) ||
+                        (p.Description != null && p.Description.ToLower().Contains(searchLower)));
+
                 }
 
                 if (minPrice.HasValue)
-                    query = query.Where(p => p.Price >= minPrice.Value);
+                {
+                    filteredProducts = filteredProducts.Where(p => p.Price >= minPrice.Value);
+                }
 
                 if (maxPrice.HasValue)
-                    query = query.Where(p => p.Price <= maxPrice.Value);
+                {
+                    filteredProducts = filteredProducts.Where(p => p.Price <= maxPrice.Value);
+                }
 
                 if (minStock.HasValue)
-                    query = query.Where(p => p.CountInStock >= minStock.Value);
+                {
+                    filteredProducts = filteredProducts.Where(p => p.CountInStock >= minStock.Value);
+                }
 
-                var totalCount = await query.CountAsync();
-
-                var items = await query
+                var totalCount = filteredProducts.Count();
+                var items = filteredProducts
                     .OrderBy(p => p.Id)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .ToListAsync();
+                    .ToList();
+
+                Console.WriteLine($"Final result: {items.Count} items");
 
                 return Ok(new PagedResult<Product>
                 {
                     Items = items,
                     TotalCount = totalCount,
-                    PageNumber = pageNumber,    
+                    PageNumber = pageNumber,
                     PageSize = pageSize
                 });
             }
@@ -102,7 +115,7 @@ namespace ProductService.Controllers
                                        th.Status == TransferStatus.Pending);
 
                     if (!hasPendingTransfer)
-                        return Forbid("You don't have access to this product");
+                        return StatusCode(403, new { Message = "You don't have access to do this" });
                 }
                 return Ok(product);
             }
@@ -125,7 +138,7 @@ namespace ProductService.Controllers
                 var currentUserId = await _authClient.GetUserIdFromTokenAsync(token);
 
                 if (userId != currentUserId)
-                    return Forbid("You can only view your own products");
+                    return StatusCode(403, new { Message = "You don't have access to do this" });
 
                 var products = await _context.Products
                     .Where(p => p.UserId == userId)
