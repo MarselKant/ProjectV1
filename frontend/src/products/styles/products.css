@@ -805,3 +805,11 @@
   margin: 5px 0;
   font-size: 14px;
 }
+.user-info {
+  background: #e3f2fd;
+  padding: 10px 15px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border-left: 4px solid #2196f3;
+  font-weight: 500;
+}

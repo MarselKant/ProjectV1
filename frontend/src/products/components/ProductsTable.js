@@ -87,6 +87,7 @@ const ProductsTable = ({
               <th>Цена</th>
               <th>В наличии</th>
               <th>Владелец</th>
+              <th>Офис</th>
               <th>Действия</th>
             </tr>
           </thead>
@@ -108,6 +109,7 @@ const ProductsTable = ({
                     `Пользователь ${product.userId}`
                   }
                 </td>
+                <td>{product.office || 'Не указан'}</td>
                 <td>
                   <button 
                     className="transfer-btn"
@@ -119,9 +121,7 @@ const ProductsTable = ({
                       product.countInStock === 0 ? "Товар отсутствует" : "Передать товар"
                     }
                   >
-                    {!currentUser ? "Войдите" :
-                     product.countInStock === 0 ? "Нет в наличии" : 
-                     product.userId !== currentUser?.id ? "Не ваш" : "Передать"}
+                    Передать
                   </button>
                 </td>
               </tr>

@@ -44,14 +44,11 @@ namespace ProductService.Services
                 var jwtToken = handler.ReadJwtToken(token);
                 var username = jwtToken.Claims.First(claim => claim.Type == "unique_name").Value;
 
-
-                var response = await _httpClient.GetAsync($"/api/auth/user-id?username={username}");
-
+                var response = await _httpClient.GetAsync($"/api/auth/user-id-by-username?username={username}");
 
                 if (response.IsSuccessStatusCode)
                 {
                     var userIdString = await response.Content.ReadAsStringAsync();
-
                     if (int.TryParse(userIdString, out int userId))
                     {
                         return userId;

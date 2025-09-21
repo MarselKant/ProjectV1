@@ -23,13 +23,12 @@ namespace ProductService.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResult<Product>>> GetProducts(
+        public async Task<ActionResult<PagedResult<ProductResponse>>> GetProducts(
             [FromQuery(Name = "pageNumber")] int pageNumber = 1,
             [FromQuery(Name = "pageSize")] int pageSize = 10,
             [FromQuery(Name = "search")] string? search = null,
             [FromQuery(Name = "minPrice")] decimal? minPrice = null,
-            [FromQuery(Name = "maxPrice")] decimal? maxPrice = null,
-            [FromQuery(Name = "minStock")] int? minStock = null)
+            [FromQuery(Name = "maxPrice")] decimal? maxPrice = null)
         {
             try
             {
@@ -38,19 +37,26 @@ namespace ProductService.Controllers
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var allProducts = await _context.Products.ToListAsync();
+                var products = await _context.Products
+                    .Select(p => new ProductResponse
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Description = p.Description,
+                        ImageUrl = p.ImageUrl,
+                        Price = p.Price,
+                        Office = p.Office
+                    })
+                    .ToListAsync();
 
-                var filteredProducts = allProducts.AsEnumerable();
-
+                var filteredProducts = products.AsEnumerable();
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
                     var searchLower = search.Trim().ToLower();
-
                     filteredProducts = filteredProducts.Where(p =>
                         (p.Name != null && p.Name.ToLower().Contains(searchLower)) ||
                         (p.Description != null && p.Description.ToLower().Contains(searchLower)));
-
                 }
 
                 if (minPrice.HasValue)
@@ -63,11 +69,6 @@ namespace ProductService.Controllers
                     filteredProducts = filteredProducts.Where(p => p.Price <= maxPrice.Value);
                 }
 
-                if (minStock.HasValue)
-                {
-                    filteredProducts = filteredProducts.Where(p => p.CountInStock >= minStock.Value);
-                }
-
                 var totalCount = filteredProducts.Count();
                 var items = filteredProducts
                     .OrderBy(p => p.Id)
@@ -75,9 +76,7 @@ namespace ProductService.Controllers
                     .Take(pageSize)
                     .ToList();
 
-                Console.WriteLine($"Final result: {items.Count} items");
-
-                return Ok(new PagedResult<Product>
+                return Ok(new PagedResult<ProductResponse>
                 {
                     Items = items,
                     TotalCount = totalCount,
@@ -92,7 +91,7 @@ namespace ProductService.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<ProductResponse>> GetProduct(int id)
         {
             try
             {
@@ -102,22 +101,37 @@ namespace ProductService.Controllers
                     return Unauthorized();
 
                 var product = await _context.Products.FindAsync(id);
-
                 if (product == null)
                     return NotFound();
+
                 var currentUserId = await _authClient.GetUserIdFromTokenAsync(token);
 
-                if (product.UserId != currentUserId)
+                var userProduct = await _context.UserProducts
+                    .FirstOrDefaultAsync(up => up.UserId == currentUserId && up.ProductId == id);
+
+                if (userProduct == null)
                 {
-                    var hasPendingTransfer = await _context.TransferHistories
-                        .AnyAsync(th => th.ProductId == id &&
-                                       th.ToUserId == currentUserId &&
-                                       th.Status == TransferStatus.Pending);
+                    var hasPendingTransfer = await _context.Transfers
+                        .Include(t => t.TransferItems)
+                        .AnyAsync(t => t.ToUserId == currentUserId &&
+                                      t.Status == TransferStatus.Pending &&
+                                      t.TransferItems.Any(ti => ti.ProductId == id));
 
                     if (!hasPendingTransfer)
                         return StatusCode(403, new { Message = "You don't have access to do this" });
                 }
-                return Ok(product);
+
+                var productResponse = new ProductResponse
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    ImageUrl = product.ImageUrl,
+                    Price = product.Price,
+                    Office = product.Office
+                };
+
+                return Ok(productResponse);
             }
             catch (Exception ex)
             {
@@ -126,7 +140,7 @@ namespace ProductService.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<List<Product>>> GetUserProducts(int userId)
+        public async Task<ActionResult<List<UserProductResponse>>> GetUserProducts(int userId)
         {
             try
             {
@@ -140,11 +154,23 @@ namespace ProductService.Controllers
                 if (userId != currentUserId)
                     return StatusCode(403, new { Message = "You don't have access to do this" });
 
-                var products = await _context.Products
-                    .Where(p => p.UserId == userId)
+                var userProducts = await _context.UserProducts
+                    .Include(up => up.Product)
+                    .Where(up => up.UserId == userId)
+                    .Select(up => new UserProductResponse
+                    {
+                        UserProductId = up.Id,
+                        ProductId = up.Product.Id,
+                        Name = up.Product.Name,
+                        Description = up.Product.Description,
+                        ImageUrl = up.Product.ImageUrl,
+                        Price = up.Product.Price,
+                        Office = up.Product.Office,
+                        CountInStock = up.CountInStock
+                    })
                     .ToListAsync();
 
-                return Ok(products);
+                return Ok(userProducts);
             }
             catch (Exception ex)
             {
@@ -159,6 +185,28 @@ namespace ProductService.Controllers
         public int TotalCount { get; set; }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
+    }
+
+    public class ProductResponse
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ImageUrl { get; set; }
+        public decimal Price { get; set; }
+        public string Office { get; set; }
+    }
+
+    public class UserProductResponse
+    {
+        public int UserProductId { get; set; }
+        public int ProductId { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string ImageUrl { get; set; }
+        public decimal Price { get; set; }
+        public string Office { get; set; }
+        public int CountInStock { get; set; }
     }
 
 }

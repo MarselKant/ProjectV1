@@ -3,7 +3,8 @@
     public class TransferHistory
     {
         public int Id { get; set; }
-        public int ProductId { get; set; }
+        public int? TransferId { get; set; }
+        public int? ProductId { get; set; }
         public int FromUserId { get; set; }
         public int ToUserId { get; set; }
         public DateTime TransferDate { get; set; }

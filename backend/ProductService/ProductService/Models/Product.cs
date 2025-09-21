@@ -10,10 +10,10 @@ namespace ProductService.Models
         public string Description { get; set; }
         public string ImageUrl { get; set; }
         public decimal Price { get; set; }
-        public int CountInStock { get; set; }
-        public int? UserId { get; set; }
         public string Office { get; set; }
         [JsonIgnore]
         public List<TransferHistory> TransferHistories { get; set; }
+        [JsonIgnore]
+        public List<UserProduct> UserProducts { get; set; }
     }
 }

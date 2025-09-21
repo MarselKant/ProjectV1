@@ -30,36 +30,18 @@ namespace ProductService.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var currentUserId = GetCurrentUserIdFromToken(token);
+                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
                 if (currentUserId <= 0)
-                {
-                    if (currentUserId == -1)
-                        return NotFound("User not found in system");
                     return StatusCode(500, "Failed to get user information");
-                }
 
                 if (transferRequest.FromUserId != currentUserId)
                     return BadRequest("You can only transfer your own products");
 
                 if (currentUserId == transferRequest.ToUserId)
                     return BadRequest("Cannot transfer products to yourself");
-
-                foreach (var item in transferRequest.Items)
-                {
-                    var product = await _context.Products.FindAsync(item.ProductId);
-                    if (product == null)
-                        return NotFound($"Product with ID {item.ProductId} not found");
-
-                    if (product.UserId != currentUserId)
-                        return BadRequest($"Product {product.Name} doesn't belong to you");
-
-                    if (item.Quantity <= 0 || item.Quantity > product.CountInStock)
-                        return BadRequest($"Invalid quantity for product {product.Name}. Available: {product.CountInStock}");
-                }
 
                 var transfer = new Transfer
                 {
@@ -70,44 +52,63 @@ namespace ProductService.Controllers
                     Message = $"Transfer request from {currentUserId} to {transferRequest.ToUserId}"
                 };
 
+                _context.Transfers.Add(transfer);
+                await _context.SaveChangesAsync();
+
                 foreach (var item in transferRequest.Items)
                 {
-                    var product = await _context.Products.FindAsync(item.ProductId);
+                    var userProduct = await _context.UserProducts
+                        .Include(up => up.Product)
+                        .FirstOrDefaultAsync(up => up.UserId == currentUserId && up.ProductId == item.ProductId);
 
-                    transfer.TransferItems.Add(new TransferItem
+                    if (userProduct == null)
+                        return NotFound($"Product with ID {item.ProductId} not found in your inventory");
+
+                    if (item.Quantity <= 0 || item.Quantity > userProduct.CountInStock)
+                        return BadRequest($"Invalid quantity for product {userProduct.Product.Name}. Available: {userProduct.CountInStock}");
+
+                    var transferItem = new TransferItem
                     {
+                        TransferId = transfer.Id,
                         ProductId = item.ProductId,
-                        Quantity = item.Quantity
-                    });
+                        Quantity = item.Quantity,
+                        ProductName = userProduct.Product.Name,
+                        ProductDescription = userProduct.Product.Description,
+                        ProductImageUrl = userProduct.Product.ImageUrl,
+                        ProductPrice = userProduct.Product.Price,
+                        ProductOffice = userProduct.Product.Office
+                    };
+                    transfer.TransferItems.Add(transferItem);
 
                     var transferHistory = new TransferHistory
                     {
+                        TransferId = transfer.Id,
                         ProductId = item.ProductId,
                         FromUserId = currentUserId,
                         ToUserId = transferRequest.ToUserId,
                         TransferDate = DateTime.UtcNow,
                         Status = TransferStatus.Pending,
-                        Message = $"Transfer of {item.Quantity} units from {currentUserId} to {transferRequest.ToUserId}"
+                        Message = $"Transfer of {item.Quantity} units of {userProduct.Product.Name} from {currentUserId} to {transferRequest.ToUserId}"
                     };
                     _context.TransferHistories.Add(transferHistory);
+
+                    if (item.Quantity == userProduct.CountInStock)
+                    {
+                        _context.UserProducts.Remove(userProduct);
+                    }
+                    else
+                    {
+                        userProduct.CountInStock -= item.Quantity;
+                        _context.UserProducts.Update(userProduct);
+                    }
                 }
 
-                _context.Transfers.Add(transfer);
                 await _context.SaveChangesAsync();
 
                 var recipientEmail = await GetUserEmailAsync(transferRequest.ToUserId.ToString());
-
                 if (!string.IsNullOrEmpty(recipientEmail))
                 {
-                    await SendEmailNotificationAsync(
-                        recipientEmail,
-                        transfer.Id,
-                        transferRequest.Items
-                    );
-                }
-                else
-                {
-                    Console.WriteLine($"Could not find email for user ID: {transferRequest.ToUserId}");
+                    await SendEmailNotificationAsync(recipientEmail, transfer.Id, transferRequest.Items);
                 }
 
                 return Ok(new
@@ -132,15 +133,17 @@ namespace ProductService.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadAsStringAsync();
+                    var email = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(email) && email.Contains("@"))
+                    {
+                        return email.Trim();
+                    }
                 }
 
-                Console.WriteLine($"Failed to get email for user {userId}: {response.StatusCode}");
                 return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error getting user email: {ex.Message}");
                 return null;
             }
         }
@@ -149,38 +152,48 @@ namespace ProductService.Controllers
         {
             try
             {
-                var productDetails = new StringBuilder();
-                productDetails.AppendLine("Transfer items details:");
-                productDetails.AppendLine("-----------------------");
+                var transferItems = await _context.TransferItems
+                    .Where(ti => ti.TransferId == transferId)
+                    .ToListAsync();
 
-                foreach (var item in items)
+                var productDetails = new StringBuilder();
+                productDetails.AppendLine("Детали передачи товаров:");
+                productDetails.AppendLine("=========================");
+                productDetails.AppendLine();
+
+                foreach (var item in transferItems)
                 {
-                    var product = await _context.Products.FindAsync(item.ProductId);
-                    if (product != null)
+                    productDetails.AppendLine($"Товар: {item.ProductName}");
+                    productDetails.AppendLine($"Количество: {item.Quantity} шт.");
+                    productDetails.AppendLine($"Описание: {item.ProductDescription}");
+                    productDetails.AppendLine($"Цена: {item.ProductPrice:C}");
+                    productDetails.AppendLine($"Офис: {item.ProductOffice}");
+
+                    if (!string.IsNullOrEmpty(item.ProductImageUrl))
                     {
-                        productDetails.AppendLine($"- {product.Name}: {item.Quantity} units");
-                        productDetails.AppendLine($"  Description: {product.Description}");
-                        productDetails.AppendLine($"  Price: {product.Price:C}");
-                        productDetails.AppendLine();
+                        productDetails.AppendLine($"Изображение: {item.ProductImageUrl}");
                     }
-                    else
-                    {
-                        productDetails.AppendLine($"- Product ID {item.ProductId}: {item.Quantity} units");
-                        productDetails.AppendLine();
-                    }
+
+                    productDetails.AppendLine("-------------------------");
+                    productDetails.AppendLine();
                 }
 
-                var subject = "Transfer Request Notification";
+                var subject = "Уведомление о запросе передачи товаров";
                 var body = $@"
-                You have received a transfer request with {items.Count} product(s).
-                
-                Transfer ID: {transferId}
-                Items count: {items.Count}
-                
-                {productDetails}
-                
-                Please accept or reject the transfer request in the system.
-                ";
+                    Уважаемый пользователь,
+
+                    Вы получили запрос на передачу товаров.
+
+                    ID передачи: {transferId}
+                    Количество товаров: {transferItems.Count}
+
+                    {productDetails}
+
+                    Пожалуйста, примите или отклоните запрос передачи в системе.
+
+                    С уважением,
+                    Система управления товарами
+                    ";
 
                 var emailContent = new FormUrlEncodedContent(new[]
                 {
@@ -193,16 +206,19 @@ namespace ProductService.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    Console.WriteLine($"Email sent successfully to {toEmail}");
+                    Console.WriteLine($"Email успешно отправлен на {toEmail}");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to send email to {toEmail}: {response.StatusCode}");
+                    Console.WriteLine($"Ошибка отправки email на {toEmail}: {response.StatusCode}");
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Детали ошибки: {errorContent}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending email: {ex.Message}");
+                Console.WriteLine($"Ошибка отправки email: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -212,20 +228,17 @@ namespace ProductService.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
                 var transfer = await _context.Transfers
                     .Include(t => t.TransferItems)
-                    .ThenInclude(ti => ti.Product)
                     .FirstOrDefaultAsync(t => t.Id == transferId);
 
                 if (transfer == null)
                     return NotFound("Transfer not found");
 
-                var currentUserId = GetCurrentUserIdFromToken(token);
-
+                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
                 if (transfer.ToUserId != currentUserId)
                     return StatusCode(403, new { Message = "You don't have access to do this" });
 
@@ -234,32 +247,29 @@ namespace ProductService.Controllers
 
                 foreach (var item in transfer.TransferItems)
                 {
-                    var originalProduct = await _context.Products.FindAsync(item.ProductId);
-                    if (originalProduct != null)
+                    // Проверяем, есть ли уже такой товар у получателя
+                    var existingUserProduct = await _context.UserProducts
+                        .FirstOrDefaultAsync(up => up.UserId == transfer.ToUserId && up.ProductId == item.ProductId);
+
+                    if (existingUserProduct != null)
                     {
-                        originalProduct.CountInStock -= item.Quantity;
-
-                        if (originalProduct.CountInStock <= 0)
+                        // Если товар уже есть - увеличиваем количество
+                        existingUserProduct.CountInStock += item.Quantity;
+                        _context.UserProducts.Update(existingUserProduct);
+                    }
+                    else
+                    {
+                        // Если товара нет - создаем новую запись
+                        var newUserProduct = new UserProduct
                         {
-                            _context.Products.Remove(originalProduct);
-                        }
-
-                        _context.Products.Update(originalProduct);
-
-                        var newProduct = new Product
-                        {
-                            Name = originalProduct.Name,
-                            Description = originalProduct.Description,
-                            ImageUrl = originalProduct.ImageUrl,
-                            Price = originalProduct.Price,
-                            CountInStock = item.Quantity,
                             UserId = transfer.ToUserId,
-                            Office = originalProduct.Office
+                            ProductId = item.ProductId.Value,
+                            CountInStock = item.Quantity
                         };
-
-                        _context.Products.Add(newProduct);
+                        _context.UserProducts.Add(newUserProduct);
                     }
 
+                    // Обновляем историю передачи
                     var transferHistory = await _context.TransferHistories
                         .FirstOrDefaultAsync(th => th.ProductId == item.ProductId &&
                                                  th.FromUserId == transfer.FromUserId &&
@@ -277,7 +287,6 @@ namespace ProductService.Controllers
                 transfer.Message = $"Transfer accepted by user {currentUserId}";
 
                 await _context.SaveChangesAsync();
-
                 return Ok(new { Message = "Transfer accepted", ItemsCount = transfer.TransferItems.Count });
             }
             catch (Exception ex)
@@ -293,7 +302,6 @@ namespace ProductService.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
@@ -304,16 +312,38 @@ namespace ProductService.Controllers
                 if (transfer == null)
                     return NotFound("Transfer not found");
 
-                var currentUserId = GetCurrentUserIdFromToken(token);
-
-                if (transfer.ToUserId != currentUserId)
-                    return StatusCode(403, new { Message = "You don't have access to do this" });
+                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
+                if (transfer.FromUserId != currentUserId && transfer.ToUserId != currentUserId)
+                    return StatusCode(403, new { Message = "You don't have access to reject this transfer" });
 
                 if (transfer.Status != TransferStatus.Pending)
                     return BadRequest("Transfer is already processed");
 
                 foreach (var item in transfer.TransferItems)
                 {
+                    // Возвращаем товар отправителю
+                    var existingUserProduct = await _context.UserProducts
+                        .FirstOrDefaultAsync(up => up.UserId == transfer.FromUserId && up.ProductId == item.ProductId);
+
+                    if (existingUserProduct != null)
+                    {
+                        // Если запись уже есть - увеличиваем количество
+                        existingUserProduct.CountInStock += item.Quantity;
+                        _context.UserProducts.Update(existingUserProduct);
+                    }
+                    else
+                    {
+                        // Если записи нет - создаем новую
+                        var returnedUserProduct = new UserProduct
+                        {
+                            UserId = transfer.FromUserId,
+                            ProductId = item.ProductId.Value,
+                            CountInStock = item.Quantity
+                        };
+                        _context.UserProducts.Add(returnedUserProduct);
+                    }
+
+                    // Обновляем историю передачи
                     var transferHistory = await _context.TransferHistories
                         .FirstOrDefaultAsync(th => th.ProductId == item.ProductId &&
                                                  th.FromUserId == transfer.FromUserId &&
@@ -323,16 +353,15 @@ namespace ProductService.Controllers
                     if (transferHistory != null)
                     {
                         transferHistory.Status = TransferStatus.Rejected;
-                        transferHistory.Message = $"Transfer rejected by user {currentUserId}";
+                        transferHistory.Message = $"Transfer rejected, items returned to sender";
                     }
                 }
 
                 transfer.Status = TransferStatus.Rejected;
-                transfer.Message = $"Transfer rejected by user {currentUserId}";
+                transfer.Message = $"Transfer rejected, items returned to sender";
 
                 await _context.SaveChangesAsync();
-
-                return Ok(new { Message = "Transfer rejected", ItemsCount = transfer.TransferItems.Count });
+                return Ok(new { Message = "Transfer rejected, items returned to sender", ItemsCount = transfer.TransferItems.Count });
             }
             catch (Exception ex)
             {
@@ -341,7 +370,7 @@ namespace ProductService.Controllers
         }
 
         [HttpGet("pending/{userId}")]
-        public async Task<ActionResult<List<TransferHistory>>> GetPendingTransfers(int userId)
+        public async Task<ActionResult> GetPendingTransfers(int userId)
         {
             try
             {
@@ -350,25 +379,33 @@ namespace ProductService.Controllers
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var currentUserId = GetCurrentUserIdFromToken(token);
+                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
 
                 if (userId != currentUserId)
                     return StatusCode(403, new { Message = "You don't have access to do this" });
 
-                var pendingTransfers = await _context.TransferHistories
-                    .Include(th => th.Product)
-                    .Where(th => th.ToUserId == userId && th.Status == TransferStatus.Pending)
-                    .Select(th => new
+                var pendingTransfers = await _context.Transfers
+                    .Include(t => t.TransferItems)
+                    .Where(t => t.ToUserId == userId && t.Status == TransferStatus.Pending)
+                    .Select(t => new
                     {
-                        th.Id,
-                        TransferId = th.Id,
-                        th.ProductId,
-                        th.FromUserId,
-                        th.ToUserId,
-                        th.TransferDate,
-                        th.Status,
-                        th.Message,
-                        th.Product
+                        TransferId = t.Id,
+                        FromUserId = t.FromUserId,
+                        ToUserId = t.ToUserId,
+                        TransferDate = t.TransferDate,
+                        Status = t.Status,
+                        Message = t.Message,
+                        Items = t.TransferItems.Select(ti => new
+                        {
+                            TransferItemId = ti.Id,
+                            ProductId = ti.ProductId,
+                            Quantity = ti.Quantity,
+                            ProductName = ti.ProductName,
+                            ProductDescription = ti.ProductDescription,
+                            ProductImageUrl = ti.ProductImageUrl,
+                            ProductPrice = ti.ProductPrice,
+                            ProductOffice = ti.ProductOffice
+                        }).ToList()
                     })
                     .ToListAsync();
 
@@ -381,7 +418,7 @@ namespace ProductService.Controllers
         }
 
         [HttpGet("sent/{userId}")]
-        public async Task<ActionResult<List<TransferHistory>>> GetSentTransfers(int userId)
+        public async Task<ActionResult> GetSentTransfers(int userId)
         {
             try
             {
@@ -390,14 +427,34 @@ namespace ProductService.Controllers
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var currentUserId = GetCurrentUserIdFromToken(token);
+                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
 
                 if (userId != currentUserId)
                     return Forbid("You can only view your own sent transfers");
 
-                var sentTransfers = await _context.TransferHistories
-                    .Include(th => th.Product)
-                    .Where(th => th.FromUserId == userId)
+                var sentTransfers = await _context.Transfers
+                    .Include(t => t.TransferItems)
+                    .Where(t => t.FromUserId == userId)
+                    .Select(t => new
+                    {
+                        TransferId = t.Id,
+                        FromUserId = t.FromUserId,
+                        ToUserId = t.ToUserId,
+                        TransferDate = t.TransferDate,
+                        Status = t.Status,
+                        Message = t.Message,
+                        Items = t.TransferItems.Select(ti => new
+                        {
+                            TransferItemId = ti.Id,
+                            ProductId = ti.ProductId,
+                            Quantity = ti.Quantity,
+                            ProductName = ti.ProductName,
+                            ProductDescription = ti.ProductDescription,
+                            ProductImageUrl = ti.ProductImageUrl,
+                            ProductPrice = ti.ProductPrice,
+                            ProductOffice = ti.ProductOffice
+                        }).ToList()
+                    })
                     .ToListAsync();
 
                 return Ok(sentTransfers);
@@ -440,23 +497,19 @@ namespace ProductService.Controllers
             }
         }
 
-        private int GetCurrentUserIdFromToken(string token)
+        private async Task<int> GetCurrentUserIdFromTokenAsync(string token)
         {
             try
             {
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
                 var username = jwtToken.Claims.First(claim => claim.Type == "unique_name").Value;
-                var userMap = new Dictionary<string, int>
-                {
-                    { "root", 1 },
-                    { "asd", 2 }
-                };
 
-                return userMap.GetValueOrDefault(username, 0);
+                return await _authClient.GetUserIdFromTokenAsync(token);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error getting user ID from token: {ex.Message}");
                 return 0;
             }
         }

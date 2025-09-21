@@ -18,46 +18,49 @@ const ProductsDashboard = () => {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-  console.log('Initializing ProductsDashboard');
-  
-  const getUserFromToken = () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const username = payload.unique_name;
-        
-        const userMap = {
-          'root': { id: 1, login: 'root' },
-          'asd': { id: 2, login: 'asd' }
-        };
-        
-        return userMap[username] || { id: 1, login: 'root' };
+    console.log('Initializing ProductsDashboard');
+    
+    const getUserFromToken = () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const username = payload.unique_name;
+          
+          const userMap = {
+            'root': { id: 1, login: 'root' },
+            'asd': { id: 2, login: 'asd' }
+          };
+          
+          return userMap[username] || { id: 1, login: 'root' };
+        }
+      } catch (error) {
+        console.error('Error getting user from token:', error);
       }
-    } catch (error) {
-      console.error('Error getting user from token:', error);
-    }
-    return null;
-  };
+      return null;
+    };
 
-  const user = getUserFromToken();
-  if (user) {
-    setCurrentUser(user);
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    console.log('Current user:', user);
-    fetchProducts();
-    fetchPendingTransfers(user.id);
-  }
-}, []);
+    const user = getUserFromToken();
+    if (user) {
+      setCurrentUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      console.log('Current user:', user);
+      fetchProducts();
+      fetchPendingTransfers(user.id);
+    }
+  }, []);
 
   const fetchPendingTransfers = async (userId) => {
     try {
-      console.log('Fetching pending transfers for user:', userId);
+      console.log('Fetching pending transfers for user ID:', userId);
       const response = await productsAPI.getPendingTransfers(userId);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
+        if (response.status === 400) {
+          console.warn('No pending transfers found for user');
+          setPendingTransfers([]);
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -88,6 +91,7 @@ const ProductsDashboard = () => {
     if (currentUser) {
       fetchPendingTransfers(currentUser.id);
     }
+    alert('Товар успешно передан!');
   };
 
   if (loading && products.length === 0) {

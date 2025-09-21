@@ -109,7 +109,6 @@ namespace AuthService.Controler
         {
             try
             {
-                Console.WriteLine($"Validating token: {AccessToken}");
 
                 if (string.IsNullOrEmpty(AccessToken) || !AccessToken.StartsWith("eyJ"))
                     return Unauthorized();
@@ -118,7 +117,6 @@ namespace AuthService.Controler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Token validation error: {ex.Message}");
                 return Unauthorized();
             }
         }
@@ -161,6 +159,24 @@ namespace AuthService.Controler
             }
         }
 
+        [Route("user-id-by-username")]
+        [HttpGet]
+        public ActionResult GetUserIdByUsername([FromQuery] string username)
+        {
+            try
+            {
+                var user = _allUsers.Users.FirstOrDefault(x => x.Login == username);
+                if (user == null)
+                    return NotFound();
+
+                return Ok(user.Id.ToString());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500);
+            }
+        }
+
         [Route("send-email")]
         [HttpPost]
         public async Task<ActionResult> SendEmail([FromForm] string To, [FromForm] string Subject, [FromForm] string Body)
@@ -173,7 +189,6 @@ namespace AuthService.Controler
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending email: {ex.Message}");
                 return StatusCode(500, "Failed to send email");
             }
         }

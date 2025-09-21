@@ -11,44 +11,44 @@ const TransferModal = ({ product, onClose, onSuccess, currentUser }) => {
   const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
-    if (searchQuery.length > 1) {
-      const timer = setTimeout(() => {
-        searchUsers(searchQuery);
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    } else {
-      setUsers([]);
-    }
-  }, [searchQuery]);
+    const searchUsers = async () => {
+      if (searchQuery.length > 1) {
+        setSearchLoading(true);
+        try {
+          const usersData = await productsAPI.searchUsers(searchQuery);
+          const filteredUsers = usersData.filter(user => user.id !== currentUser.id);
+          setUsers(filteredUsers);
+        } catch (err) {
+          console.error('Error searching users:', err);
+          setUsers([]);
+        } finally {
+          setSearchLoading(false);
+        }
+      } else {
+        setUsers([]);
+      }
+    };
 
-  const searchUsers = async (query) => {
-    setSearchLoading(true);
-    try {
-      const usersData = await productsAPI.searchUsers(query);
-      const filteredUsers = usersData.filter(user => user.id !== currentUser.id);
-      setUsers(filteredUsers);
-    } catch (err) {
-      console.error('Error searching users:', err);
-      setUsers([]);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+    const timeoutId = setTimeout(searchUsers, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, currentUser.id]);
 
   const handleTransfer = async () => {
     if (!selectedUserId || quantity <= 0) {
       setError('Выберите пользователя и укажите количество');
+      alert('Пожалуйста, выберите пользователя и укажите количество');
       return;
     }
 
     if (quantity > product.countInStock) {
       setError('Недостаточно товара на складе');
+      alert(`Недостаточно товара на складе. Доступно: ${product.countInStock} шт.`);
       return;
     }
 
     if (parseInt(selectedUserId) === currentUser.id) {
       setError('Нельзя передать товар самому себе');
+      alert('Нельзя передать товар самому себе');
       return;
     }
 
@@ -64,17 +64,28 @@ const TransferModal = ({ product, onClose, onSuccess, currentUser }) => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Ошибка при передаче товара');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Ошибка при передаче товара');
       }
 
       alert(`Запрос на передачу товара "${product.name}" успешно отправлен!`);
       onSuccess();
     } catch (err) {
-      setError(err.message || 'Ошибка при передаче товара');
       console.error('Transfer error:', err);
+      setError(err.message || 'Ошибка при передаче товара');
+      alert('Ошибка при передаче товара: ' + err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuantityChange = (value) => {
+    const numValue = parseInt(value) || 0;
+    if (numValue >= 0 && numValue <= product.countInStock) {
+      setQuantity(numValue);
+    } else if (numValue > product.countInStock) {
+      setQuantity(product.countInStock);
+      alert(`Максимальное количество: ${product.countInStock} шт.`);
     }
   };
 
@@ -100,7 +111,13 @@ const TransferModal = ({ product, onClose, onSuccess, currentUser }) => {
               min="1"
               max={product.countInStock}
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) => handleQuantityChange(e.target.value)}
+              onBlur={(e) => {
+                if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                  setQuantity(1);
+                  alert('Количество должно быть не менее 1');
+                }
+              }}
             />
           </div>
 
@@ -149,7 +166,9 @@ const TransferModal = ({ product, onClose, onSuccess, currentUser }) => {
         </div>
 
         <div className="modal-footer">
-          <button onClick={onClose} disabled={loading}>Отмена</button>
+          <button onClick={onClose} disabled={loading} className="secondary-btn">
+            Отмена
+          </button>
           <button 
             onClick={handleTransfer} 
             disabled={loading || !selectedUserId || searchLoading}

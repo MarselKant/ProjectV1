@@ -1,4 +1,3 @@
-// frontend/src/auth/components/LoginForm.js
 import React, { useState } from 'react';
 import { useAuth } from '../../shared/hooks/useAuth';
 
@@ -21,16 +20,14 @@ const LoginForm = ({ onForgotPassword }) => {
     setIsLoading(true);
     setError('');
 
-    console.log('Login attempt with:', formData);
-
     try {
       const result = await login(formData);
       
-      console.log('Login result:', result);
-
       if (!result.success) {
         setError(result.error || 'Ошибка авторизации');
+        alert('Ошибка авторизации: ' + result.error);
       } else {
+        alert('Вход выполнен успешно!');
         const token = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         console.log('Tokens saved:', { token, refreshToken });
@@ -39,6 +36,7 @@ const LoginForm = ({ onForgotPassword }) => {
     } catch (err) {
       console.error('Login form error:', err);
       setError('Произошла непредвиденная ошибка');
+      alert('Ошибка сети. Проверьте подключение к серверу.');
     } finally {
       setIsLoading(false);
     }

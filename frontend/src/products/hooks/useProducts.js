@@ -17,8 +17,8 @@ export const useProducts = () => {
 
     try {
       const params = {
-        pageNumber: filters.page || pagination.page,
-        pageSize: filters.pageSize || pagination.pageSize,
+        pageNumber: filters.page || 1,
+        pageSize: filters.pageSize || 10,
         search: filters.search || '',
         minPrice: filters.minPrice || '',
         maxPrice: filters.maxPrice || '',
@@ -35,8 +35,7 @@ export const useProducts = () => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        throw new Error(`Ошибка загрузки: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
@@ -55,12 +54,12 @@ export const useProducts = () => {
       }
     } catch (err) {
       console.error('Error fetching products:', err);
-      setError('Ошибка загрузки товаров: ' + err.message);
+      setError(err.message);
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.pageSize]);
+  }, []);
 
   return {
     products,

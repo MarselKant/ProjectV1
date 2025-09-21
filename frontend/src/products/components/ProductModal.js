@@ -1,4 +1,3 @@
-// frontend/src/products/components/ProductModal.js
 import React from 'react';
 
 const ProductModal = ({ product, onClose }) => {
@@ -14,11 +13,16 @@ const ProductModal = ({ product, onClose }) => {
         
         <div className="modal-body">
           <div className="product-image">
-            {product.img ? (
-              <img src={product.img} alt={product.name} />
-            ) : (
-              <div className="no-image">Изображение отсутствует</div>
-            )}
+            {product.imageUrl ? (
+              <img src={product.imageUrl} alt={product.name} 
+                   onError={(e) => {
+                     e.target.style.display = 'none';
+                     e.target.nextSibling.style.display = 'block';
+                   }} />
+            ) : null}
+            <div className="no-image" style={{display: product.imageUrl ? 'none' : 'block'}}>
+              Изображение отсутствует
+            </div>
           </div>
           
           <div className="product-details">
@@ -32,10 +36,10 @@ const ProductModal = ({ product, onClose }) => {
               <strong>Цена:</strong> {product.price} ₽
             </div>
             <div className="detail-row">
-              <strong>В наличии:</strong> {product.count_in_stock} шт.
+              <strong>В наличии:</strong> {product.countInStock} шт.
             </div>
             <div className="detail-row">
-              <strong>Владелец:</strong> {product.user?.name || 'Неизвестно'}
+              <strong>Владелец:</strong> {product.userId || 'Неизвестно'}
             </div>
             <div className="detail-row">
               <strong>Офис:</strong> {product.office || 'Не указан'}

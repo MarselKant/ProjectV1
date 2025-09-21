@@ -6,6 +6,7 @@ namespace ProductService.Context
     public class ProductContext : DbContext
     {
         public DbSet<Product> Products { get; set; }
+        public DbSet<UserProduct> UserProducts { get; set; }
         public DbSet<TransferHistory> TransferHistories { get; set; }
         public DbSet<Transfer> Transfers { get; set; }
         public DbSet<TransferItem> TransferItems { get; set; }
@@ -26,8 +27,20 @@ namespace ProductService.Context
                 entity.Property(p => p.Description).HasMaxLength(500);
                 entity.Property(p => p.ImageUrl).HasMaxLength(500).IsRequired(false);
                 entity.Property(p => p.Price).HasColumnType("decimal(18,2)");
-                entity.Property(p => p.UserId).IsRequired(true);
                 entity.Property(p => p.Office).HasMaxLength(100).IsRequired(false);
+            });
+
+            modelBuilder.Entity<UserProduct>(entity =>
+            {
+                entity.HasKey(up => up.Id);
+                entity.Property(up => up.UserId).IsRequired();
+                entity.Property(up => up.ProductId).IsRequired();
+                entity.Property(up => up.CountInStock).IsRequired().HasDefaultValue(1);
+                
+                entity.HasOne(up => up.Product)
+                    .WithMany(p => p.UserProducts)
+                    .HasForeignKey(up => up.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<TransferHistory>(entity =>
@@ -35,8 +48,10 @@ namespace ProductService.Context
                 entity.HasKey(th => th.Id);
                 entity.Property(th => th.Id).ValueGeneratedOnAdd();
                 entity.HasOne(th => th.Product)
-                      .WithMany(p => p.TransferHistories)
-                      .HasForeignKey(th => th.ProductId);
+                    .WithMany(p => p.TransferHistories)
+                    .HasForeignKey(th => th.ProductId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(th => th.ProductId).IsRequired(false);
             });
             modelBuilder.Entity<Transfer>(entity =>
             {
@@ -58,10 +73,18 @@ namespace ProductService.Context
                 entity.Property(ti => ti.Id).ValueGeneratedOnAdd();
                 entity.Property(ti => ti.Quantity).IsRequired().HasDefaultValue(1);
 
+                entity.Property(ti => ti.ProductName).IsRequired();
+                entity.Property(ti => ti.ProductDescription).HasMaxLength(500);
+                entity.Property(ti => ti.ProductImageUrl).HasMaxLength(500).IsRequired(false);
+                entity.Property(ti => ti.ProductPrice).HasColumnType("decimal(18,2)");
+                entity.Property(ti => ti.ProductOffice).HasMaxLength(100).IsRequired(false);
+
+                entity.Property(ti => ti.ProductId).IsRequired(false);
+
                 entity.HasOne(ti => ti.Product)
                     .WithMany()
                     .HasForeignKey(ti => ti.ProductId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Transfer>().HasIndex(t => t.FromUserId);
