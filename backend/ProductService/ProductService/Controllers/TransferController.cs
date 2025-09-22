@@ -24,24 +24,76 @@ namespace ProductService.Controllers
             _authClient = authClient;
         }
 
+        private async Task<int> GetCurrentUserIdFromToken(string token)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+
+                if (usernameClaim != null)
+                {
+                    var userResponse = await _authClient.GetAsync($"/api/auth/user-id-by-username?username={usernameClaim.Value}");
+                    if (userResponse.IsSuccessStatusCode)
+                    {
+                        var userIdStr = await userResponse.Content.ReadAsStringAsync();
+                        if (int.TryParse(userIdStr, out int userIdFromDb))
+                        {
+                            return userIdFromDb;
+                        }
+                    }
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting user ID from token: {ex.Message}");
+                return 0;
+            }
+        }
+
+        private async Task<string> GetUsernameById(int userId)
+        {
+            try
+            {
+                var response = await _authClient.GetAsync($"/api/auth/username-by-id?userId={userId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadAsStringAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting username: {ex.Message}");
+            }
+            return $"User{userId}";
+        }
+
         [HttpPost]
         public async Task<ActionResult> TransferProducts([FromBody] TransferRequestDto transferRequest)
         {
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
 
-                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("eyJ"))
+                    return Unauthorized(new { message = "Invalid token" });
+
+                int currentUserId = await GetCurrentUserIdFromToken(token);
                 if (currentUserId <= 0)
-                    return StatusCode(500, "Failed to get user information");
+                    return Unauthorized(new { message = "Failed to get user information" });
 
                 if (transferRequest.FromUserId != currentUserId)
-                    return BadRequest("You can only transfer your own products");
+                    return BadRequest(new { message = "You can only transfer your own products" });
 
                 if (currentUserId == transferRequest.ToUserId)
-                    return BadRequest("Cannot transfer products to yourself");
+                    return BadRequest(new { message = "Cannot transfer products to yourself" });
+
+                // Получаем имена пользователей
+                var fromUsername = await GetUsernameById(currentUserId);
+                var toUsername = await GetUsernameById(transferRequest.ToUserId);
 
                 var transfer = new Transfer
                 {
@@ -49,7 +101,7 @@ namespace ProductService.Controllers
                     ToUserId = transferRequest.ToUserId,
                     TransferDate = DateTime.UtcNow,
                     Status = TransferStatus.Pending,
-                    Message = $"Transfer request from {currentUserId} to {transferRequest.ToUserId}"
+                    Message = $"Transfer request from {fromUsername} to {toUsername}"
                 };
 
                 _context.Transfers.Add(transfer);
@@ -62,10 +114,10 @@ namespace ProductService.Controllers
                         .FirstOrDefaultAsync(up => up.UserId == currentUserId && up.ProductId == item.ProductId);
 
                     if (userProduct == null)
-                        return NotFound($"Product with ID {item.ProductId} not found in your inventory");
+                        return NotFound(new { message = $"Product with ID {item.ProductId} not found in your inventory" });
 
                     if (item.Quantity <= 0 || item.Quantity > userProduct.CountInStock)
-                        return BadRequest($"Invalid quantity for product {userProduct.Product.Name}. Available: {userProduct.CountInStock}");
+                        return BadRequest(new { message = $"Invalid quantity for product {userProduct.Product.Name}. Available: {userProduct.CountInStock}" });
 
                     var transferItem = new TransferItem
                     {
@@ -78,7 +130,7 @@ namespace ProductService.Controllers
                         ProductPrice = userProduct.Product.Price,
                         ProductOffice = userProduct.Product.Office
                     };
-                    transfer.TransferItems.Add(transferItem);
+                    _context.TransferItems.Add(transferItem);
 
                     var transferHistory = new TransferHistory
                     {
@@ -88,7 +140,7 @@ namespace ProductService.Controllers
                         ToUserId = transferRequest.ToUserId,
                         TransferDate = DateTime.UtcNow,
                         Status = TransferStatus.Pending,
-                        Message = $"Transfer of {item.Quantity} units of {userProduct.Product.Name} from {currentUserId} to {transferRequest.ToUserId}"
+                        Message = $"Transfer of {item.Quantity} units of {userProduct.Product.Name} from {fromUsername} to {toUsername}"
                     };
                     _context.TransferHistories.Add(transferHistory);
 
@@ -105,120 +157,115 @@ namespace ProductService.Controllers
 
                 await _context.SaveChangesAsync();
 
-                var recipientEmail = await GetUserEmailAsync(transferRequest.ToUserId.ToString());
-                if (!string.IsNullOrEmpty(recipientEmail))
-                {
-                    await SendEmailNotificationAsync(recipientEmail, transfer.Id, transferRequest.Items);
-                }
+                await SendTransferEmailNotification(transfer.Id, transferRequest.ToUserId, fromUsername, toUsername);
 
                 return Ok(new
                 {
-                    Message = "Transfer request sent",
-                    TransferId = transfer.Id,
-                    ItemsCount = transferRequest.Items.Count
+                    message = "Transfer request sent successfully",
+                    transferId = transfer.Id,
+                    itemsCount = transferRequest.Items.Count
                 });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error transferring products: {ex}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
 
-        private async Task<string> GetUserEmailAsync(string userId)
+        private async Task SendTransferEmailNotification(int transferId, int toUserId, string fromUsername, string toUsername)
         {
             try
             {
-                var response = await _authClient.GetAsync($"/api/auth/user-email?userId={userId}");
+                var transfer = await _context.Transfers
+                    .Include(t => t.TransferItems)
+                    .FirstOrDefaultAsync(t => t.Id == transferId);
 
-                if (response.IsSuccessStatusCode)
+                if (transfer == null) return;
+
+                var recipientEmailResponse = await _authClient.GetAsync($"/api/auth/user-email?userId={toUserId}");
+                if (recipientEmailResponse.IsSuccessStatusCode)
                 {
-                    var email = await response.Content.ReadAsStringAsync();
-                    if (!string.IsNullOrEmpty(email) && email.Contains("@"))
+                    var recipientEmail = await recipientEmailResponse.Content.ReadAsStringAsync();
+
+                    if (!string.IsNullOrEmpty(recipientEmail) && recipientEmail.Contains("@"))
                     {
-                        return email.Trim();
+                        // Формируем детальное сообщение
+                        var emailBody = new StringBuilder();
+                        emailBody.AppendLine($"Уважаемый {toUsername},");
+                        emailBody.AppendLine();
+                        emailBody.AppendLine($"Вы получили запрос на передачу товаров от пользователя {fromUsername}.");
+                        emailBody.AppendLine();
+                        emailBody.AppendLine("Детали передачи:");
+                        emailBody.AppendLine($"ID передачи: {transferId}");
+                        emailBody.AppendLine($"Дата: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
+                        emailBody.AppendLine();
+                        emailBody.AppendLine("Товары:");
+
+                        foreach (var item in transfer.TransferItems)
+                        {
+                            emailBody.AppendLine($"- {item.ProductName}: {item.Quantity} шт. по {item.ProductPrice} ₽");
+                        }
+
+                        emailBody.AppendLine();
+                        emailBody.AppendLine("Пожалуйста, войдите в систему для принятия или отклонения передачи.");
+                        emailBody.AppendLine();
+                        emailBody.AppendLine("С уважением,");
+                        emailBody.AppendLine("Система управления товарами");
+
+                        var emailContent = new FormUrlEncodedContent(new[]
+                        {
+                            new KeyValuePair<string, string>("To", recipientEmail.Trim()),
+                            new KeyValuePair<string, string>("Subject", $"Запрос на передачу товаров от {fromUsername}"),
+                            new KeyValuePair<string, string>("Body", emailBody.ToString())
+                        });
+
+                        await _authClient.PostAsync("/api/auth/send-email", emailContent);
                     }
                 }
-
-                return null;
             }
             catch (Exception ex)
             {
-                return null;
+                Console.WriteLine($"Error sending email notification: {ex.Message}");
             }
         }
 
-        private async Task SendEmailNotificationAsync(string toEmail, int transferId, List<TransferItemRequest> items)
+        [HttpGet("pending/{userId}")]
+        public async Task<ActionResult> GetPendingTransfers(int userId)
         {
             try
             {
-                var transferItems = await _context.TransferItems
-                    .Where(ti => ti.TransferId == transferId)
+                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("eyJ"))
+                    return Unauthorized(new { message = "Invalid token" });
+
+                var pendingTransfers = await _context.Transfers
+                    .Include(t => t.TransferItems)
+                    .Where(t => (t.ToUserId == userId || t.FromUserId == userId) && t.Status == TransferStatus.Pending)
+                    .Select(t => new
+                    {
+                        Id = t.Id,
+                        FromUserId = t.FromUserId,
+                        ToUserId = t.ToUserId,
+                        TransferDate = t.TransferDate,
+                        Status = t.Status,
+                        Message = t.Message,
+                        Items = t.TransferItems.Select(ti => new
+                        {
+                            ProductId = ti.ProductId,
+                            ProductName = ti.ProductName,
+                            Quantity = ti.Quantity,
+                            ProductPrice = ti.ProductPrice
+                        }).ToList()
+                    })
                     .ToListAsync();
 
-                var productDetails = new StringBuilder();
-                productDetails.AppendLine("Детали передачи товаров:");
-                productDetails.AppendLine("=========================");
-                productDetails.AppendLine();
-
-                foreach (var item in transferItems)
-                {
-                    productDetails.AppendLine($"Товар: {item.ProductName}");
-                    productDetails.AppendLine($"Количество: {item.Quantity} шт.");
-                    productDetails.AppendLine($"Описание: {item.ProductDescription}");
-                    productDetails.AppendLine($"Цена: {item.ProductPrice:C}");
-                    productDetails.AppendLine($"Офис: {item.ProductOffice}");
-
-                    if (!string.IsNullOrEmpty(item.ProductImageUrl))
-                    {
-                        productDetails.AppendLine($"Изображение: {item.ProductImageUrl}");
-                    }
-
-                    productDetails.AppendLine("-------------------------");
-                    productDetails.AppendLine();
-                }
-
-                var subject = "Уведомление о запросе передачи товаров";
-                var body = $@"
-                    Уважаемый пользователь,
-
-                    Вы получили запрос на передачу товаров.
-
-                    ID передачи: {transferId}
-                    Количество товаров: {transferItems.Count}
-
-                    {productDetails}
-
-                    Пожалуйста, примите или отклоните запрос передачи в системе.
-
-                    С уважением,
-                    Система управления товарами
-                    ";
-
-                var emailContent = new FormUrlEncodedContent(new[]
-                {
-            new KeyValuePair<string, string>("To", toEmail),
-            new KeyValuePair<string, string>("Subject", subject),
-            new KeyValuePair<string, string>("Body", body)
-        });
-
-                var response = await _authClient.PostAsync("/api/auth/send-email", emailContent);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine($"Email успешно отправлен на {toEmail}");
-                }
-                else
-                {
-                    Console.WriteLine($"Ошибка отправки email на {toEmail}: {response.StatusCode}");
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Детали ошибки: {errorContent}");
-                }
+                return Ok(pendingTransfers);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка отправки email: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                Console.WriteLine($"Error getting pending transfers: {ex}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
 
@@ -228,38 +275,38 @@ namespace ProductService.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("eyJ"))
+                    return Unauthorized(new { message = "Invalid token" });
 
                 var transfer = await _context.Transfers
                     .Include(t => t.TransferItems)
                     .FirstOrDefaultAsync(t => t.Id == transferId);
 
                 if (transfer == null)
-                    return NotFound("Transfer not found");
+                    return NotFound(new { message = "Transfer not found" });
 
-                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
+                int currentUserId = await GetCurrentUserIdFromToken(token);
+                if (currentUserId <= 0)
+                    return Unauthorized(new { message = "Failed to get user information" });
+
                 if (transfer.ToUserId != currentUserId)
-                    return StatusCode(403, new { Message = "You don't have access to do this" });
+                    return Forbid("You can only accept transfers sent to you");
 
                 if (transfer.Status != TransferStatus.Pending)
-                    return BadRequest("Transfer is already processed");
+                    return BadRequest(new { message = "Transfer is already processed" });
 
                 foreach (var item in transfer.TransferItems)
                 {
-                    // Проверяем, есть ли уже такой товар у получателя
                     var existingUserProduct = await _context.UserProducts
                         .FirstOrDefaultAsync(up => up.UserId == transfer.ToUserId && up.ProductId == item.ProductId);
 
                     if (existingUserProduct != null)
                     {
-                        // Если товар уже есть - увеличиваем количество
                         existingUserProduct.CountInStock += item.Quantity;
                         _context.UserProducts.Update(existingUserProduct);
                     }
                     else
                     {
-                        // Если товара нет - создаем новую запись
                         var newUserProduct = new UserProduct
                         {
                             UserId = transfer.ToUserId,
@@ -269,12 +316,8 @@ namespace ProductService.Controllers
                         _context.UserProducts.Add(newUserProduct);
                     }
 
-                    // Обновляем историю передачи
                     var transferHistory = await _context.TransferHistories
-                        .FirstOrDefaultAsync(th => th.ProductId == item.ProductId &&
-                                                 th.FromUserId == transfer.FromUserId &&
-                                                 th.ToUserId == transfer.ToUserId &&
-                                                 th.Status == TransferStatus.Pending);
+                        .FirstOrDefaultAsync(th => th.TransferId == transferId && th.ProductId == item.ProductId);
 
                     if (transferHistory != null)
                     {
@@ -287,12 +330,12 @@ namespace ProductService.Controllers
                 transfer.Message = $"Transfer accepted by user {currentUserId}";
 
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = "Transfer accepted", ItemsCount = transfer.TransferItems.Count });
+                return Ok(new { message = "Transfer accepted successfully" });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error accepting transfer: {ex}");
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
 
@@ -302,38 +345,38 @@ namespace ProductService.Controllers
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("eyJ"))
+                    return Unauthorized(new { message = "Invalid token" });
 
                 var transfer = await _context.Transfers
                     .Include(t => t.TransferItems)
                     .FirstOrDefaultAsync(t => t.Id == transferId);
 
                 if (transfer == null)
-                    return NotFound("Transfer not found");
+                    return NotFound(new { message = "Transfer not found" });
 
-                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
-                if (transfer.FromUserId != currentUserId && transfer.ToUserId != currentUserId)
-                    return StatusCode(403, new { Message = "You don't have access to reject this transfer" });
+                int currentUserId = await GetCurrentUserIdFromToken(token);
+                if (currentUserId <= 0)
+                    return Unauthorized(new { message = "Failed to get user information" });
+
+                if (transfer.ToUserId != currentUserId && transfer.FromUserId != currentUserId)
+                    return Forbid("You don't have access to this transfer");
 
                 if (transfer.Status != TransferStatus.Pending)
-                    return BadRequest("Transfer is already processed");
+                    return BadRequest(new { message = "Transfer is already processed" });
 
                 foreach (var item in transfer.TransferItems)
                 {
-                    // Возвращаем товар отправителю
                     var existingUserProduct = await _context.UserProducts
                         .FirstOrDefaultAsync(up => up.UserId == transfer.FromUserId && up.ProductId == item.ProductId);
 
                     if (existingUserProduct != null)
                     {
-                        // Если запись уже есть - увеличиваем количество
                         existingUserProduct.CountInStock += item.Quantity;
                         _context.UserProducts.Update(existingUserProduct);
                     }
                     else
                     {
-                        // Если записи нет - создаем новую
                         var returnedUserProduct = new UserProduct
                         {
                             UserId = transfer.FromUserId,
@@ -343,187 +386,61 @@ namespace ProductService.Controllers
                         _context.UserProducts.Add(returnedUserProduct);
                     }
 
-                    // Обновляем историю передачи
                     var transferHistory = await _context.TransferHistories
-                        .FirstOrDefaultAsync(th => th.ProductId == item.ProductId &&
-                                                 th.FromUserId == transfer.FromUserId &&
-                                                 th.ToUserId == transfer.ToUserId &&
-                                                 th.Status == TransferStatus.Pending);
+                        .FirstOrDefaultAsync(th => th.TransferId == transferId && th.ProductId == item.ProductId);
 
                     if (transferHistory != null)
                     {
                         transferHistory.Status = TransferStatus.Rejected;
-                        transferHistory.Message = $"Transfer rejected, items returned to sender";
+                        transferHistory.Message = $"Transfer rejected by user {currentUserId}";
                     }
                 }
 
                 transfer.Status = TransferStatus.Rejected;
-                transfer.Message = $"Transfer rejected, items returned to sender";
+                transfer.Message = $"Transfer rejected by user {currentUserId}";
 
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = "Transfer rejected, items returned to sender", ItemsCount = transfer.TransferItems.Count });
+                return Ok(new { message = "Transfer rejected successfully" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error rejecting transfer: {ex}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
 
-        [HttpGet("pending/{userId}")]
-        public async Task<ActionResult> GetPendingTransfers(int userId)
+        [HttpGet("history/{userId}")]
+        public async Task<ActionResult> GetTransferHistory(int userId)
         {
             try
             {
                 var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                if (string.IsNullOrEmpty(token) || !token.StartsWith("eyJ"))
+                    return Unauthorized(new { message = "Invalid token" });
 
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
-
-                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
-
-                if (userId != currentUserId)
-                    return StatusCode(403, new { Message = "You don't have access to do this" });
-
-                var pendingTransfers = await _context.Transfers
-                    .Include(t => t.TransferItems)
-                    .Where(t => t.ToUserId == userId && t.Status == TransferStatus.Pending)
-                    .Select(t => new
+                var transferHistory = await _context.TransferHistories
+                    .Where(th => th.FromUserId == userId || th.ToUserId == userId)
+                    .OrderByDescending(th => th.TransferDate)
+                    .Select(th => new
                     {
-                        TransferId = t.Id,
-                        FromUserId = t.FromUserId,
-                        ToUserId = t.ToUserId,
-                        TransferDate = t.TransferDate,
-                        Status = t.Status,
-                        Message = t.Message,
-                        Items = t.TransferItems.Select(ti => new
-                        {
-                            TransferItemId = ti.Id,
-                            ProductId = ti.ProductId,
-                            Quantity = ti.Quantity,
-                            ProductName = ti.ProductName,
-                            ProductDescription = ti.ProductDescription,
-                            ProductImageUrl = ti.ProductImageUrl,
-                            ProductPrice = ti.ProductPrice,
-                            ProductOffice = ti.ProductOffice
-                        }).ToList()
+                        th.Id,
+                        th.TransferId,
+                        th.ProductId,
+                        th.FromUserId,
+                        th.ToUserId,
+                        th.TransferDate,
+                        th.Status,
+                        th.Message
                     })
                     .ToListAsync();
 
-                return Ok(pendingTransfers);
+                return Ok(transferHistory);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                Console.WriteLine($"Error getting transfer history: {ex}");
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
-        }
-
-        [HttpGet("sent/{userId}")]
-        public async Task<ActionResult> GetSentTransfers(int userId)
-        {
-            try
-            {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
-
-                var currentUserId = await GetCurrentUserIdFromTokenAsync(token);
-
-                if (userId != currentUserId)
-                    return Forbid("You can only view your own sent transfers");
-
-                var sentTransfers = await _context.Transfers
-                    .Include(t => t.TransferItems)
-                    .Where(t => t.FromUserId == userId)
-                    .Select(t => new
-                    {
-                        TransferId = t.Id,
-                        FromUserId = t.FromUserId,
-                        ToUserId = t.ToUserId,
-                        TransferDate = t.TransferDate,
-                        Status = t.Status,
-                        Message = t.Message,
-                        Items = t.TransferItems.Select(ti => new
-                        {
-                            TransferItemId = ti.Id,
-                            ProductId = ti.ProductId,
-                            Quantity = ti.Quantity,
-                            ProductName = ti.ProductName,
-                            ProductDescription = ti.ProductDescription,
-                            ProductImageUrl = ti.ProductImageUrl,
-                            ProductPrice = ti.ProductPrice,
-                            ProductOffice = ti.ProductOffice
-                        }).ToList()
-                    })
-                    .ToListAsync();
-
-                return Ok(sentTransfers);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpGet("users")]
-        public async Task<ActionResult<List<UserDto>>> GetUsers([FromQuery] string search = "")
-        {
-            try
-            {
-                var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-                if (!await _authClient.ValidateTokenAsync(token))
-                    return Unauthorized();
-
-                var users = new List<UserDto>
-                {
-                    new UserDto { Id = 1, Login = "root", Email = "root@example.com" },
-                    new UserDto { Id = 2, Login = "asd", Email = "asd@example.com" }
-                };
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    users = users.Where(u =>
-                        u.Login.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                        u.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-                }
-
-                return Ok(users);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        private async Task<int> GetCurrentUserIdFromTokenAsync(string token)
-        {
-            try
-            {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(token);
-                var username = jwtToken.Claims.First(claim => claim.Type == "unique_name").Value;
-
-                return await _authClient.GetUserIdFromTokenAsync(token);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error getting user ID from token: {ex.Message}");
-                return 0;
-            }
-        }
-
-        public class UserDto
-        {
-            public int Id { get; set; }
-            public string Login { get; set; }
-            public string Email { get; set; }
-        }
-
-        private ObjectResult Forbid(string message)
-        {
-            return StatusCode(403, new { Message = message });
         }
     }
 }

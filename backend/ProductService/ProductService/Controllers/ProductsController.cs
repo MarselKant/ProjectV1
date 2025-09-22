@@ -21,14 +21,13 @@ namespace ProductService.Controllers
             _context = context;
             _authClient = authClient;
         }
-
         [HttpGet]
         public async Task<ActionResult<PagedResult<ProductResponse>>> GetProducts(
-            [FromQuery(Name = "pageNumber")] int pageNumber = 1,
-            [FromQuery(Name = "pageSize")] int pageSize = 10,
-            [FromQuery(Name = "search")] string? search = null,
-            [FromQuery(Name = "minPrice")] decimal? minPrice = null,
-            [FromQuery(Name = "maxPrice")] decimal? maxPrice = null)
+                [FromQuery(Name = "pageNumber")] int pageNumber = 1,
+                [FromQuery(Name = "pageSize")] int pageSize = 10,
+                [FromQuery(Name = "search")] string? search = null,
+                [FromQuery(Name = "minPrice")] decimal? minPrice = null,
+                [FromQuery(Name = "maxPrice")] decimal? maxPrice = null)
         {
             try
             {
@@ -37,7 +36,35 @@ namespace ProductService.Controllers
                 if (!await _authClient.ValidateTokenAsync(token))
                     return Unauthorized();
 
-                var products = await _context.Products
+                var query = _context.Products.AsEnumerable();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var searchLower = search.Trim().ToLower();
+                    query = query.Where(p =>
+                                    (p.Name != null && p.Name.ToLower().Contains(searchLower)) ||
+                                    (p.Description != null && p.Description.ToLower().Contains(searchLower)));
+                }
+
+                if (minPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price >= minPrice.Value);
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price <= maxPrice.Value);
+                }
+
+                var totalCount = query.Count();
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+                pageNumber = Math.Max(1, Math.Min(pageNumber, totalPages > 0 ? totalPages : 1));
+
+                var items = query
+                    .OrderBy(p => p.Id)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
                     .Select(p => new ProductResponse
                     {
                         Id = p.Id,
@@ -47,33 +74,6 @@ namespace ProductService.Controllers
                         Price = p.Price,
                         Office = p.Office
                     })
-                    .ToListAsync();
-
-                var filteredProducts = products.AsEnumerable();
-
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    var searchLower = search.Trim().ToLower();
-                    filteredProducts = filteredProducts.Where(p =>
-                        (p.Name != null && p.Name.ToLower().Contains(searchLower)) ||
-                        (p.Description != null && p.Description.ToLower().Contains(searchLower)));
-                }
-
-                if (minPrice.HasValue)
-                {
-                    filteredProducts = filteredProducts.Where(p => p.Price >= minPrice.Value);
-                }
-
-                if (maxPrice.HasValue)
-                {
-                    filteredProducts = filteredProducts.Where(p => p.Price <= maxPrice.Value);
-                }
-
-                var totalCount = filteredProducts.Count();
-                var items = filteredProducts
-                    .OrderBy(p => p.Id)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .ToList();
 
                 return Ok(new PagedResult<ProductResponse>
@@ -81,7 +81,8 @@ namespace ProductService.Controllers
                     Items = items,
                     TotalCount = totalCount,
                     PageNumber = pageNumber,
-                    PageSize = pageSize
+                    PageSize = pageSize,
+                    TotalPages = totalPages
                 });
             }
             catch (Exception ex)
@@ -185,6 +186,7 @@ namespace ProductService.Controllers
         public int TotalCount { get; set; }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
+        public int TotalPages { get; set; }
     }
 
     public class ProductResponse
@@ -208,5 +210,4 @@ namespace ProductService.Controllers
         public string Office { get; set; }
         public int CountInStock { get; set; }
     }
-
 }

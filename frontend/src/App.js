@@ -26,10 +26,11 @@ function App() {
       {isAuthenticated ? (
         <div>
           <div className="header">
-            <h1>Самый лучший сайт!</h1>
+            <h1>Avito 2.0</h1>
             <button onClick={() => {
               localStorage.removeItem('accessToken');
               localStorage.removeItem('refreshToken');
+              localStorage.removeItem('currentUser');
               window.location.reload();
             }} className="logout-btn">
               Выйти

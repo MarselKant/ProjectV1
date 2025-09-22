@@ -1,75 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import ProductsTable from './ProductsTable';
 import PendingTransfers from './PendingTransfers';
+import TransferHistory from './TransferHistory';
+import InventoryTable from './InventoryTable';
 import Filters from './Filters';
 import { useProducts } from '../hooks/useProducts';
-import { productsAPI } from '../api/productsApi';
 import '../styles/products.css';
 
 const ProductsDashboard = () => {
-  const { products, loading, error, pagination, fetchProducts } = useProducts();
+  const { products, loading, error, pagination, fetchProducts, updatePageSize } = useProducts();
   const [filters, setFilters] = useState({
     search: '',
     minPrice: '',
-    maxPrice: '',
-    minStock: ''
+    maxPrice: ''
   });
   const [pendingTransfers, setPendingTransfers] = useState([]);
+  const [transferHistory, setTransferHistory] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    console.log('Initializing ProductsDashboard');
-    
-    const getUserFromToken = () => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
       try {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const username = payload.unique_name;
-          
-          const userMap = {
-            'root': { id: 1, login: 'root' },
-            'asd': { id: 2, login: 'asd' }
-          };
-          
-          return userMap[username] || { id: 1, login: 'root' };
-        }
+        const user = JSON.parse(storedUser);
+        setCurrentUser(user);
+        fetchProducts();
+        fetchPendingTransfers(user.id);
+        fetchTransferHistory(user.id);
       } catch (error) {
-        console.error('Error getting user from token:', error);
+        console.error('Error parsing user data:', error);
       }
-      return null;
-    };
-
-    const user = getUserFromToken();
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      console.log('Current user:', user);
-      fetchProducts();
-      fetchPendingTransfers(user.id);
     }
-  }, []);
+  }, [refreshKey]);
 
   const fetchPendingTransfers = async (userId) => {
     try {
-      console.log('Fetching pending transfers for user ID:', userId);
-      const response = await productsAPI.getPendingTransfers(userId);
-      
-      if (!response.ok) {
-        if (response.status === 400) {
-          console.warn('No pending transfers found for user');
-          setPendingTransfers([]);
-          return;
+      const response = await fetch(`http://localhost:7224/api/transfer/pending/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPendingTransfers(data);
+      } else {
+        setPendingTransfers([]);
       }
-      
-      const transfers = await response.json();
-      console.log('Pending transfers received:', transfers);
-      setPendingTransfers(Array.isArray(transfers) ? transfers : []);
-    } catch (err) {
-      console.error('Error fetching pending transfers:', err);
+    } catch (error) {
       setPendingTransfers([]);
+    }
+  };
+
+  const fetchTransferHistory = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:7224/api/transfer/history/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTransferHistory(data);
+      } else {
+        setTransferHistory([]);
+      }
+    } catch (error) {
+      setTransferHistory([]);
     }
   };
 
@@ -83,19 +82,20 @@ const ProductsDashboard = () => {
   };
 
   const handlePageSizeChange = (newSize) => {
+    updatePageSize(newSize);
     fetchProducts({ ...filters, pageSize: newSize, page: 1 });
   };
 
   const handleTransferSuccess = () => {
-    fetchProducts();
-    if (currentUser) {
-      fetchPendingTransfers(currentUser.id);
-    }
-    alert('Товар успешно передан!');
+    setRefreshKey(prev => prev + 1);
+  };
+
+  const handleTransferResponse = () => {
+    setRefreshKey(prev => prev + 1);
   };
 
   if (loading && products.length === 0) {
-    return <div className="loading">Загрузка...</div>;
+    return <div className="loading">Загрузка товаров...</div>;
   }
 
   return (
@@ -108,27 +108,42 @@ const ProductsDashboard = () => {
         </div>
       )}
       
-      <PendingTransfers 
-        transfers={pendingTransfers} 
-        onUpdate={() => currentUser && fetchPendingTransfers(currentUser.id)}
-      />
-      
-      <Filters 
-        filters={filters} 
-        onChange={handleFilterChange} 
-      />
-      
-      {error && <div className="error-message">{error}</div>}
-      
-      <ProductsTable 
-        products={products}
-        loading={loading}
-        pagination={pagination}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-        onTransferSuccess={handleTransferSuccess}
-        currentUser={currentUser}
-      />
+      <div className="dashboard-content">
+        <div className="main-content">
+          <PendingTransfers 
+            transfers={pendingTransfers} 
+            onUpdate={handleTransferResponse}
+            currentUser={currentUser}
+          />
+          
+          <InventoryTable 
+            currentUser={currentUser} 
+            onTransferSuccess={handleTransferSuccess}
+          />
+          
+          <Filters 
+            filters={filters} 
+            onChange={handleFilterChange} 
+          />
+          
+          {error && <div className="error-message">{error}</div>}
+          
+          <ProductsTable 
+            products={products}
+            loading={loading}
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        </div>
+        
+        <div className="sidebar">
+          <TransferHistory 
+            history={transferHistory}
+            currentUser={currentUser}
+          />
+        </div>
+      </div>
     </div>
   );
 };

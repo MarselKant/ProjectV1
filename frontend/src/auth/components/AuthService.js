@@ -10,7 +10,7 @@ const AuthService = () => {
   return (
     <div className="auth-service">
       <div className="auth-container">
-        <h1>Самый лучший сайт!</h1>
+        <h1>WELCOME Avito 2.0</h1>
         {showForgotPassword ? (
           <ForgotPassword onBackToLogin={() => setShowForgotPassword(false)} />
         ) : (

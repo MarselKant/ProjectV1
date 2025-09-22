@@ -27,19 +27,10 @@ const ProductModal = ({ product, onClose }) => {
           
           <div className="product-details">
             <div className="detail-row">
-              <strong>ID:</strong> {product.id}
-            </div>
-            <div className="detail-row">
               <strong>Описание:</strong> {product.description}
             </div>
             <div className="detail-row">
               <strong>Цена:</strong> {product.price} ₽
-            </div>
-            <div className="detail-row">
-              <strong>В наличии:</strong> {product.countInStock} шт.
-            </div>
-            <div className="detail-row">
-              <strong>Владелец:</strong> {product.userId || 'Неизвестно'}
             </div>
             <div className="detail-row">
               <strong>Офис:</strong> {product.office || 'Не указан'}

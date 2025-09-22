@@ -1,4 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿// backend/ProductService/Services/AuthServiceClient.cs
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 
 namespace ProductService.Services
@@ -17,17 +18,12 @@ namespace ProductService.Services
         {
             try
             {
-                Console.WriteLine($"Sending token for validation: {token}");
-
                 var formData = new FormUrlEncodedContent(new[]
                 {
-            new KeyValuePair<string, string>("AccessToken", token)
-        });
+                    new KeyValuePair<string, string>("AccessToken", token)
+                });
 
                 var response = await _httpClient.PostAsync("/api/auth/validate-token", formData);
-
-                Console.WriteLine($"Validation response: {response.StatusCode}");
-
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
@@ -36,6 +32,7 @@ namespace ProductService.Services
                 return false;
             }
         }
+
         public async Task<int> GetUserIdFromTokenAsync(string token)
         {
             try
@@ -69,6 +66,32 @@ namespace ProductService.Services
                 return 0;
             }
         }
+
+        // ДОБАВЬТЕ ЭТОТ МЕТОД
+        public async Task<bool> GetUserExistsAsync(string userId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/auth/user-exists?userId={userId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    // Парсим JSON ответ
+                    if (content.Contains("\"exists\":true"))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking user existence: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<HttpResponseMessage> GetAsync(string requestUri)
         {
             return await _httpClient.GetAsync(requestUri);

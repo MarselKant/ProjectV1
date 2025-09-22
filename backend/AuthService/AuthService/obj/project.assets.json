@@ -9212,19 +9212,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\gigpr\\.nuget\\packages\\": {}
+    "C:\\Users\\vladi\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\AuthService.csproj",
+      "projectUniqueName": "C:\\Users\\vladi\\Desktop\\скопр\\ProjectV1-main(testing)\\ProjectV1-main(front)\\backend\\AuthService\\AuthService\\AuthService.csproj",
       "projectName": "AuthService",
-      "projectPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\AuthService.csproj",
-      "packagesPath": "C:\\Users\\gigpr\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\gigpr\\Downloads\\ProjectV1-main\\backend\\AuthService\\AuthService\\obj\\",
+      "projectPath": "C:\\Users\\vladi\\Desktop\\скопр\\ProjectV1-main(testing)\\ProjectV1-main(front)\\backend\\AuthService\\AuthService\\AuthService.csproj",
+      "packagesPath": "C:\\Users\\vladi\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\vladi\\Desktop\\скопр\\ProjectV1-main(testing)\\ProjectV1-main(front)\\backend\\AuthService\\AuthService\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\gigpr\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\vladi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -9232,7 +9237,6 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -9250,7 +9254,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net6.0": {
@@ -9310,24 +9315,6 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Ref",
-            "version": "[6.0.33, 6.0.33]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Host.win-x64",
-            "version": "[6.0.33, 6.0.33]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Ref",
-            "version": "[6.0.33, 6.0.33]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Ref",
-            "version": "[6.0.33, 6.0.33]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -9336,7 +9323,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304\\RuntimeIdentifierGraph.json"
       }
     }
   }

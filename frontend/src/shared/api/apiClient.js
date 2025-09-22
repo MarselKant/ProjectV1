@@ -1,19 +1,6 @@
-const getAuthApiBase = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return '/api/auth';
-  }
-  return process.env.REACT_APP_AUTH_API || 'http://localhost:7223';
-};
-
-const getProductApiBase = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return '/api/products';
-  }
-  return process.env.REACT_APP_PRODUCT_API || 'http://localhost:7224';
-};
-
-const AUTH_API_BASE = getAuthApiBase();
-const PRODUCT_API_BASE = getProductApiBase();
+// frontend/src/shared/api/apiClient.js
+const AUTH_API_BASE = process.env.NODE_ENV === 'production' ? '/api/auth' : 'http://localhost:7223';
+const PRODUCT_API_BASE = process.env.NODE_ENV === 'production' ? '/api/products' : 'http://localhost:7224';
 
 export const authAPI = {
   login: async (loginData) => {
@@ -21,126 +8,117 @@ export const authAPI = {
     formData.append('Login', loginData.Login);
     formData.append('Password', loginData.Password);
 
-    const response = await fetch(`${AUTH_API_BASE}/login`, {
-      method: 'POST',
-      body: formData,
-      credentials: process.env.NODE_ENV === 'production' ? 'same-origin' : 'include'
-    });
+    try {
+      const response = await fetch(`${AUTH_API_BASE}/login`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    return response;
+      return response;
+    } catch (error) {
+      console.error('Login API error:', error);
+      throw error;
+    }
   },
 
   forgotPassword: async (emailOrLogin) => {
     const formData = new FormData();
     formData.append('EmailOrLogin', emailOrLogin);
     
-    const response = await fetch(`${AUTH_API_BASE}/forgot-password`, {
-      method: 'POST',
-      body: formData,
-      credentials: process.env.NODE_ENV === 'production' ? 'same-origin' : 'include'
-    });
+    try {
+      const response = await fetch(`${AUTH_API_BASE}/forgot-password`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    return response;
+      return response;
+    } catch (error) {
+      console.error('Forgot password API error:', error);
+      throw error;
+    }
   },
 
   refreshToken: async (refreshToken) => {
     const formData = new FormData();
     formData.append('RefreshToken', refreshToken);
     
-    const response = await fetch(`${AUTH_API_BASE}/refresh`, {
-      method: 'POST',
-      body: formData,
-      credentials: process.env.NODE_ENV === 'production' ? 'same-origin' : 'include'
-    });
+    try {
+      const response = await fetch(`${AUTH_API_BASE}/refresh`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    return response;
+      return response;
+    } catch (error) {
+      console.error('Refresh token API error:', error);
+      throw error;
+    }
   }
 };
 
 export const productsAPI = {
-  getProducts: (params = {}) => {
-    const queryParams = new URLSearchParams();
-    
-    if (params.search && params.search.trim() !== '') queryParams.append('search', params.search);
-    if (params.minPrice) queryParams.append('minPrice', params.minPrice);
-    if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
-    if (params.minStock) queryParams.append('minStock', params.minStock);
-    if (params.page) queryParams.append('pageNumber', params.page);
-    if (params.pageSize) queryParams.append('pageSize', params.pageSize);
-    
-    return fetch(`${PRODUCT_API_BASE}?${queryParams}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
+  getProducts: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params.search) queryParams.append('search', params.search);
+      if (params.minPrice) queryParams.append('minPrice', params.minPrice);
+      if (params.maxPrice) queryParams.append('maxPrice', params.maxPrice);
+      if (params.page) queryParams.append('pageNumber', params.page);
+      if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+      
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${PRODUCT_API_BASE}?${queryParams}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get products API error:', error);
+      throw error;
+    }
   },
 
-  getProduct: (productId) => {
-    return fetch(`${PRODUCT_API_BASE}/${productId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
+  transferProduct: async (transferData) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`http://localhost:7224/api/transfer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fromUserId: transferData.fromUserId,
+          toUserId: transferData.toUserId,
+          items: [{
+            productId: transferData.productId,
+            quantity: transferData.quantity
+          }]
+        })
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Transfer product API error:', error);
+      throw error;
+    }
   },
 
-  getUserProducts: (userId) => {
-    return fetch(`${PRODUCT_API_BASE}/user/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
-  },
-
-  transferProduct: (transferData) => {
-    return fetch(`http://localhost:7224/api/transfer`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      },
-      body: JSON.stringify(transferData)
-    });
-  },
-
-  getPendingTransfers: (userId) => {
-    return fetch(`http://localhost:7224/api/transfer/pending/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
-  },
-
-  acceptTransfer: (transferId) => {
-    return fetch(`http://localhost:7224/api/transfer/accept/${transferId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
-  },
-
-  rejectTransfer: (transferId) => {
-    return fetch(`http://localhost:7224/api/transfer/reject/${transferId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-      }
-    });
-  },
-
-  searchUsers: (query) => {
+  searchUsers: async (query) => {
+    // Mock данные пользователей
     const mockUsers = [
-      { id: 'user1', login: 'user1', email: 'user1@example.com' },
-      { id: 'user2', login: 'user2', email: 'user2@example.com' },
-      { id: 'user3', login: 'user3', email: 'user3@example.com' },
-      { id: 'admin', login: 'admin', email: 'admin@example.com' }
+      { id: 1, login: 'root', email: 'root@example.com' },
+      { id: 2, login: 'asd', email: 'asd@example.com' },
+      { id: 3, login: 'user3', email: 'user3@example.com' },
+      { id: 4, login: 'test', email: 'test@example.com' }
     ];
     
-    const filteredUsers = mockUsers.filter(user => 
+    return mockUsers.filter(user => 
       user.login.toLowerCase().includes(query.toLowerCase()) ||
       user.email.toLowerCase().includes(query.toLowerCase())
     );
-    
-    return Promise.resolve(filteredUsers);
   }
 };

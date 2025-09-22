@@ -1,10 +1,11 @@
 ﻿
-using Microsoft.AspNetCore.Mvc;
 using AuthService.Context;
 using AuthService.Model;
-using AuthService.Tokens;
-using System.Security.Claims;
 using AuthService.Services;
+using AuthService.Tokens;
+using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace AuthService.Controler
 {
@@ -190,6 +191,72 @@ namespace AuthService.Controler
             catch (Exception ex)
             {
                 return StatusCode(500, "Failed to send email");
+            }
+        }
+
+        [Route("user-exists")]
+        [HttpGet]
+        public ActionResult CheckUserExists([FromQuery] string userId)
+        {
+            try
+            {
+                if (int.TryParse(userId, out int id))
+                {
+                    var userExists = _allUsers.Users.Any(u => u.Id == id);
+                    return Ok(new { exists = userExists });
+                }
+                return BadRequest(new { message = "Invalid user ID" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking user existence: {ex.Message}");
+                return StatusCode(500, new { message = "Error checking user existence" });
+            }
+        }
+        // backend/AuthService/Controller/UserController.cs
+        [Route("user-id-from-token")]
+        [HttpGet]
+        public ActionResult GetUserIdFromToken([FromQuery] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                    return BadRequest(new { message = "Token is required" });
+
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+                var usernameClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "unique_name");
+
+                if (usernameClaim == null)
+                    return BadRequest(new { message = "Invalid token claims" });
+
+                var user = _allUsers.Users.FirstOrDefault(u => u.Login == usernameClaim.Value);
+                if (user == null)
+                    return NotFound(new { message = "User not found" });
+
+                return Ok(user.Id.ToString());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error getting user ID from token: {ex.Message}" });
+            }
+        }
+        // backend/AuthService/Controller/UserController.cs
+        [Route("username-by-id")]
+        [HttpGet]
+        public ActionResult GetUsernameById([FromQuery] int userId)
+        {
+            try
+            {
+                var user = _allUsers.Users.FirstOrDefault(u => u.Id == userId);
+                if (user == null)
+                    return NotFound(new { message = "User not found" });
+
+                return Ok(user.Login);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error getting username: {ex.Message}" });
             }
         }
     }

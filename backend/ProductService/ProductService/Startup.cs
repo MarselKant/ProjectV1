@@ -26,6 +26,7 @@ namespace ProductService
             services.AddHttpClient<AuthServiceClient>(client =>
             {
                 client.BaseAddress = new Uri("http://auth-service:7223");
+                client.Timeout = TimeSpan.FromSeconds(30);
             });
 
 
